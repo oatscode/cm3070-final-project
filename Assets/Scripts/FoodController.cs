@@ -13,7 +13,7 @@ public class FoodController : MonoBehaviour {
     private float minY;
     private float maxY;
 
-     IEnumerator SpawnFood() {
+    IEnumerator SpawnFood() {
         while (true) {
             yield return new WaitForSeconds(spawnInterval);
 
@@ -27,7 +27,7 @@ public class FoodController : MonoBehaviour {
         }
      }
 
-        IEnumerator SpawnHotFood() {
+    IEnumerator SpawnHotFood() {
         while (true) {
             yield return new WaitForSeconds(hotFoodSpawnInterval);
 
@@ -46,15 +46,13 @@ public class FoodController : MonoBehaviour {
         }
     }
 
-    // private void OnTriggerEnter2D(Collider2D collision)
-    // {
-    //     // Check if the colliding object has the tag "Food"
-    //     if (collision.gameObject.tag == "Boundary")
-    //     {
-    //         // Destroy the colliding game object
-    //         Destroy(collision.gameObject);
-    //     }
-    // }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Food")) {
+            // Destroy the colliding food object
+            Destroy(collision.gameObject);
+        }
+    }
 
     // Start is called before the first frame update
     void Start() {

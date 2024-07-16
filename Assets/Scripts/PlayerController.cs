@@ -12,11 +12,11 @@ public class PlayerController : MonoBehaviour {
     private SpriteRenderer spriteRenderer;
     private Coroutine openMouthCoroutine;
     public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI comboText; // Reference to the UI Text element for displaying the combo
+    public TextMeshProUGUI comboText; 
     private bool isMouthOpen = false;
     private int score = 0;
-    private int consecutiveEaten = 0; // Counter for consecutive food items eaten
-    public BoundaryDestroyer boundaryDestroyer; // Reference to the BoundaryDestroyer script
+    private int consecutiveEaten = 0; 
+    public BoundaryDestroyer boundaryDestroyer; 
     public GameObject playerBody;
     private float screenHeight;
 
