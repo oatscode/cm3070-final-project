@@ -1,38 +1,39 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
 public class PlayerController : MonoBehaviour {
     public float moveSpeed = 5;
-    public float vInput;
+    public float speedBoostMultiplier = 2f; // Multiplier for speed boost
+    public float speedBoostDuration = 10f; // Duration for speed boost
+    private SpriteRenderer spriteRenderer;
+    private Coroutine openMouthCoroutine;
+    private Coroutine speedBoostCoroutine;
+    private Coroutine iceCreamCoroutine;
+    private Coroutine magnetCoroutine;
+    private bool isMouthOpen = false;
     public Sprite closedMouthSprite;
     public Sprite openMouthSprite;
     public float openMouthDuration = 0.5f;
-    private SpriteRenderer spriteRenderer;
-    private Coroutine openMouthCoroutine;
-    public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI comboText; 
-    private bool isMouthOpen = false;
-    private int score = 0;
-    private int consecutiveEaten = 0; 
-    public BoundaryDestroyer boundaryDestroyer; 
     public GameObject playerBody;
     private float screenHeight;
+    private float originalMoveSpeed;
 
-    // Start is called before the first frame update
-    void Start() {
+    public TextMeshProUGUI powerText;
+
+    private void Start() {
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = closedMouthSprite;
-        UpdateScore();
-        ResetCombo(); // Initialize combo text
 
-        // Calculate screen height in world units
         screenHeight = Camera.main.orthographicSize * 2;
+        originalMoveSpeed = moveSpeed;
+
+        if (powerText != null) {
+            powerText.text = "";
+        }
     }
 
-    // Update is called once per frame
-    void Update() {
+    private void Update() {
         float vInput = Input.GetAxisRaw("Vertical");
         transform.Translate(Vector2.up * vInput * moveSpeed * Time.deltaTime);
 
@@ -45,7 +46,7 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    IEnumerator OpenMouth() {
+    private IEnumerator OpenMouth() {
         isMouthOpen = true;
         spriteRenderer.sprite = openMouthSprite;
         yield return new WaitForSeconds(openMouthDuration);
@@ -55,39 +56,61 @@ public class PlayerController : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D collision) {
         if (collision.CompareTag("Food") && isMouthOpen) {
-            Destroy(collision.gameObject);
-
-            score += 100;
-            consecutiveEaten++;
-            UpdateScore();
-            UpdateCombo();
-
-            // Increase PlayerBody Y scale
-            Vector3 newScale = playerBody.transform.localScale;
-            newScale.y += 0.1f;
-            playerBody.transform.localScale = newScale;
-
-            // Check for win condition
-            if (playerBody.transform.localScale.y >= screenHeight) {
-                Debug.Log("You Win!");
-            }
-
-            if (consecutiveEaten >= 3) {
-                consecutiveEaten = 0;
-                ResetCombo();
-                boundaryDestroyer.DecrementAngerMeter(0.1f); // Decrease anger meter by 10%
+            Food food = collision.GetComponent<Food>();
+            if (food != null) {
+                food.OnEaten(FindObjectOfType<ScoreManager>(), this);
             }
         }
     }
 
-    public void ResetCombo() {
-        comboText.text = "Combo: ";
+    public void ActivateSpeedBoost() {
+        if (speedBoostCoroutine != null) {
+            StopCoroutine(speedBoostCoroutine);
+        }
+        speedBoostCoroutine = StartCoroutine(SpeedBoost());
     }
 
-    private void UpdateCombo() {
-        comboText.text = "Combo: " + new string('O', consecutiveEaten);
+    private IEnumerator SpeedBoost() {
+        moveSpeed *= speedBoostMultiplier;
+
+        if (powerText != null) {
+            powerText.text = "<color=red>SPEED</color>";
+        }
+
+        yield return new WaitForSeconds(speedBoostDuration);
+        moveSpeed = originalMoveSpeed;
+
+        // Reset PowerText
+        if (powerText != null) {
+            powerText.text = "";
+        }
     }
-    private void UpdateScore() {
-        scoreText.text = "Score: " + score;
+
+    public void ActivateIceCreamEffect() {
+        if (iceCreamCoroutine != null) {
+            StopCoroutine(iceCreamCoroutine);
+        }
+        iceCreamCoroutine = StartCoroutine(IceCreamEffect());
+    }
+
+    private IEnumerator IceCreamEffect() {
+        // Placeholder for Ice Cream effect
+        Debug.Log("Ice Cream effect activated!");
+        yield return new WaitForSeconds(10f); // Example duration
+        Debug.Log("Ice Cream effect ended.");
+    }
+
+    public void ActivateMagnetEffect() {
+        if (magnetCoroutine != null) {
+            StopCoroutine(magnetCoroutine);
+        }
+        magnetCoroutine = StartCoroutine(MagnetEffect());
+    }
+
+    private IEnumerator MagnetEffect() {
+        // Placeholder for Magnet effect
+        Debug.Log("Magnet effect activated!");
+        yield return new WaitForSeconds(10f); // Example duration
+        Debug.Log("Magnet effect ended.");
     }
 }
