@@ -10,12 +10,13 @@ public class Food : MonoBehaviour {
             scoreManager.AddScore(points);
         }
         if (player != null) {
+            Debug.Log(powerUpType);
             switch (powerUpType) {
                 case PowerUpType.Chilli:
                     player.ActivateSpeedBoost();
                     break;
                 case PowerUpType.IceCream:
-                    //player.ActivateIceCreamEffect();
+                    player.ActivateIceCreamEffect();
                     break;
                 case PowerUpType.Magnet:
                     //player.ActivateMagnetEffect();

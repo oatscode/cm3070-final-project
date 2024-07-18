@@ -10,27 +10,32 @@ public class PlayerController : MonoBehaviour {
     private Coroutine openMouthCoroutine;
     private Coroutine speedBoostCoroutine;
     private Coroutine iceCreamCoroutine;
-    private Coroutine magnetCoroutine;
+    // private Coroutine magnetCoroutine;
     private bool isMouthOpen = false;
     public Sprite closedMouthSprite;
     public Sprite openMouthSprite;
     public float openMouthDuration = 0.5f;
     public GameObject playerBody;
-    private float screenHeight;
+    // private float screenHeight;
     private float originalMoveSpeed;
+    private bool isIceCreamEffectActive = false;
 
     public TextMeshProUGUI powerText;
+    private FoodSpawner foodSpawner;
 
     private void Start() {
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = closedMouthSprite;
 
-        screenHeight = Camera.main.orthographicSize * 2;
+        // screenHeight = Camera.main.orthographicSize * 2;
         originalMoveSpeed = moveSpeed;
 
         if (powerText != null) {
             powerText.text = "";
         }
+
+        // Get reference to the FoodSpawner
+        foodSpawner = FindObjectOfType<FoodSpawner>();
     }
 
     private void Update() {
@@ -78,6 +83,7 @@ public class PlayerController : MonoBehaviour {
         }
 
         yield return new WaitForSeconds(speedBoostDuration);
+
         moveSpeed = originalMoveSpeed;
 
         // Reset PowerText
@@ -94,23 +100,57 @@ public class PlayerController : MonoBehaviour {
     }
 
     private IEnumerator IceCreamEffect() {
-        // Placeholder for Ice Cream effect
-        Debug.Log("Ice Cream effect activated!");
-        yield return new WaitForSeconds(10f); // Example duration
-        Debug.Log("Ice Cream effect ended.");
-    }
+        isIceCreamEffectActive = true;
 
-    public void ActivateMagnetEffect() {
-        if (magnetCoroutine != null) {
-            StopCoroutine(magnetCoroutine);
+        // Get all current FoodMover instances
+        FoodMover[] foodMovers = FindObjectsOfType<FoodMover>();
+
+        // Reduce speed by half
+        foreach (var foodMover in foodMovers) {
+            foodMover.SetSpeed(foodMover.GetSpeed() / 2);
         }
-        magnetCoroutine = StartCoroutine(MagnetEffect());
+
+        // Update PowerText to show "SLOW" in blue
+        if (powerText != null) {
+            powerText.text = "<color=blue>SLOW</color>";
+        }
+
+        // Double the spawn intervals for all foods
+        foodSpawner.AdjustSpawnIntervals(2f);
+
+        yield return new WaitForSeconds(10f); // Duration of the Ice Cream effect
+
+        // Reset speed to original for all current food instances
+        foreach (var foodMover in foodMovers) {
+            foodMover.ResetToOriginalSpeed();
+        }
+
+        isIceCreamEffectActive = false;
+
+        // Reset spawn intervals to original
+        foodSpawner.AdjustSpawnIntervals(0.5f);
+
+        // Reset PowerText
+        if (powerText != null) {
+            powerText.text = "";
+        }
     }
 
-    private IEnumerator MagnetEffect() {
-        // Placeholder for Magnet effect
-        Debug.Log("Magnet effect activated!");
-        yield return new WaitForSeconds(10f); // Example duration
-        Debug.Log("Magnet effect ended.");
+    public bool IsIceCreamEffectActive() {
+        return isIceCreamEffectActive;
     }
+
+    // public void ActivateMagnetEffect() {
+    //     if (magnetCoroutine != null) {
+    //         StopCoroutine(magnetCoroutine);
+    //     }
+    //     magnetCoroutine = StartCoroutine(MagnetEffect());
+    // }
+
+    // private IEnumerator MagnetEffect() {
+    //     // Placeholder for Magnet effect
+    //     Debug.Log("Magnet effect activated!");
+    //     yield return new WaitForSeconds(10f); // Example duration
+    //     Debug.Log("Magnet effect ended.");
+    // }
 }

@@ -19,15 +19,17 @@ public class FoodSpawner : MonoBehaviour {
     }
 
     public List<FoodProperties> foods;
-
     public GameObject foodRange;
     private BoxCollider2D foodRangeCollider;
+    private List<IEnumerator> spawnCoroutines = new List<IEnumerator>();
 
     private void Start() {
         foodRangeCollider = foodRange.GetComponent<BoxCollider2D>();
 
         foreach (var food in foods) {
-            StartCoroutine(SpawnFood(food));
+            var coroutine = SpawnFood(food);
+            spawnCoroutines.Add(coroutine);
+            StartCoroutine(coroutine);
         }
     }
 
@@ -40,9 +42,8 @@ public class FoodSpawner : MonoBehaviour {
             GameObject foodInstance = Instantiate(foodProperties.prefab, spawnPosition, spawnRotation);
             FoodMover foodMover = foodInstance.AddComponent<FoodMover>();
             Food food = foodInstance.GetComponent<Food>();
-            if (food != null) {
-                food.powerUpType = foodProperties.powerUpType; // Set the power-up type
-            }
+            food.powerUpType = foodProperties.powerUpType; // Set the power-up type
+
             foodMover.SetProperties(foodProperties.speed, foodProperties.movementPattern, foodRangeCollider.bounds.min.y, foodRangeCollider.bounds.max.y);
         }
     }
@@ -53,5 +54,19 @@ public class FoodSpawner : MonoBehaviour {
         float maxY = foodRangeCollider.bounds.max.y;
         float y = Random.Range(minY, maxY);
         return new Vector2(x, y);
+    }
+
+    public void AdjustSpawnIntervals(float multiplier) {
+        StopAllCoroutines();
+        for (int i = 0; i < foods.Count; i++) {
+            foods[i].spawnInterval *= multiplier;
+            var coroutine = SpawnFood(foods[i]);
+            spawnCoroutines[i] = coroutine;
+            StartCoroutine(coroutine);
+        }
+    }
+
+    public void ResetSpawnIntervals(float originalMultiplier) {
+        AdjustSpawnIntervals(originalMultiplier);
     }
 }

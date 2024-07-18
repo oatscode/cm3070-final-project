@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class FoodMover : MonoBehaviour {
     private float speed;
+    private float originalSpeed;
     private FoodSpawner.MovementPattern movementPattern;
     private Vector2 direction;
     private float waveFrequency = 3f;
@@ -13,9 +14,16 @@ public class FoodMover : MonoBehaviour {
 
     public void SetProperties(float speed, FoodSpawner.MovementPattern movementPattern, float minY = 0f, float maxY = 0f) {
         this.speed = speed;
+        this.originalSpeed = speed;
         this.movementPattern = movementPattern;
         this.minY = minY;
         this.maxY = maxY;
+
+        // Check if Ice Cream effect is active
+        if (FindObjectOfType<PlayerController>().IsIceCreamEffectActive())
+        {
+            this.speed /= 2; // Apply slow effect
+        }
         
         // Initialize direction for bounce movement
         if (movementPattern == FoodSpawner.MovementPattern.Bounce)
@@ -69,5 +77,25 @@ public class FoodMover : MonoBehaviour {
         newPos.x += direction.x * speed * Time.deltaTime;
         newPos.y = Mathf.Lerp(minY, maxY, (Mathf.Sin(Time.time * waveFrequency) + 1.0f) / 2.0f);
         transform.position = newPos;
+    }
+
+    public void SetSpeed(float newSpeed)
+    {
+        speed = newSpeed;
+    }
+
+    public float GetSpeed()
+    {
+        return speed;
+    }
+
+    public float GetOriginalSpeed()
+    {
+        return originalSpeed;
+    }
+
+    public void ResetToOriginalSpeed()
+    {
+        speed = originalSpeed;
     }
 }
