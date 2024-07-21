@@ -31,7 +31,7 @@ public class BoundaryDestroyer : MonoBehaviour {
 
         UpdateAngerText();
 
-        // Check for game over condition
+        // Game over if anger hits 100%
         if (angerMeterValue >= 1f) {
             GameOver();
         }
@@ -39,7 +39,7 @@ public class BoundaryDestroyer : MonoBehaviour {
 
     public void DecrementAngerMeter(float decrement) {
         angerMeterValue -= decrement;
-        angerMeterValue = Mathf.Clamp(angerMeterValue, 0, 1); // Ensure the value stays between 0 to 1
+        angerMeterValue = Mathf.Clamp(angerMeterValue, 0, 1);
         angerMeterFill.fillAmount = angerMeterValue;
 
         // Change colour based on the fill amount
@@ -63,13 +63,17 @@ public class BoundaryDestroyer : MonoBehaviour {
 
     private void GameOver() {
         gameOverPanel.SetActive(true);       
+        SoundManager.instance.StopBackgroundMusic(); // Stop background music
+        SoundManager.instance.PlayGameOver(); // Play game over sound
         Time.timeScale = 0f; // Pause the game
+        
     }
 
     public void RestartGame() {
         Time.timeScale = 1f; // Unpause the game
+        SoundManager.instance.PlayBackgroundMusic();
         
-        // Reload the current scene
+        // Reload the scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

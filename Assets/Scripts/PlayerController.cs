@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 
@@ -21,7 +22,9 @@ public class PlayerController : MonoBehaviour {
     private bool isIceCreamEffectActive = false;
 
     public TextMeshProUGUI powerText;
-    private FoodSpawner foodSpawner;
+
+    // Track all FoodMover instances
+    private List<FoodMover> activeFoodMovers = new List<FoodMover>();
 
     private void Start() {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -34,8 +37,6 @@ public class PlayerController : MonoBehaviour {
             powerText.text = "";
         }
 
-        // Get reference to the FoodSpawner
-        foodSpawner = FindObjectOfType<FoodSpawner>();
     }
 
     private void Update() {
@@ -115,8 +116,11 @@ public class PlayerController : MonoBehaviour {
             powerText.text = "<color=blue>SLOW</color>";
         }
 
+        // Slow down background music
+        SoundManager.instance.SetBackgroundMusicPitch(0.5f);
+
         // Double the spawn intervals for all foods
-        foodSpawner.AdjustSpawnIntervals(2f);
+        //foodSpawner.AdjustSpawnIntervals(2f);
 
         yield return new WaitForSeconds(10f); // Duration of the Ice Cream effect
 
@@ -128,7 +132,10 @@ public class PlayerController : MonoBehaviour {
         isIceCreamEffectActive = false;
 
         // Reset spawn intervals to original
-        foodSpawner.AdjustSpawnIntervals(0.5f);
+        //foodSpawner.AdjustSpawnIntervals(0.5f);
+
+        // Reset background music pitch
+        SoundManager.instance.SetBackgroundMusicPitch(1f);
 
         // Reset PowerText
         if (powerText != null) {

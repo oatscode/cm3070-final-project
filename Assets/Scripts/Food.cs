@@ -13,9 +13,11 @@ public class Food : MonoBehaviour {
             Debug.Log(powerUpType);
             switch (powerUpType) {
                 case PowerUpType.Chilli:
+                    //SoundManager.instance.PlaySpeed();
                     player.ActivateSpeedBoost();
                     break;
                 case PowerUpType.IceCream:
+                    //SoundManager.instance.PlaySlow();
                     player.ActivateIceCreamEffect();
                     break;
                 case PowerUpType.Magnet:
@@ -23,6 +25,7 @@ public class Food : MonoBehaviour {
                     break;
             }
         }
+        SoundManager.instance.PlayBite();
         Destroy(gameObject);
     }
 }
