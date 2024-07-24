@@ -23,12 +23,20 @@ public class PlayerController : MonoBehaviour {
 
     public TextMeshProUGUI powerText;
 
+    public GameObject boundaryTop;
+    public GameObject boundaryBottom;
+    private float topBoundary;
+    private float bottomBoundary;
+
     // Track all FoodMover instances
-    private List<FoodMover> activeFoodMovers = new List<FoodMover>();
+    // private List<FoodMover> activeFoodMovers = new List<FoodMover>();
 
     private void Start() {
         spriteRenderer = GetComponent<SpriteRenderer>();
         spriteRenderer.sprite = closedMouthSprite;
+
+        topBoundary = boundaryTop.transform.position.y;
+        bottomBoundary = boundaryBottom.transform.position.y;
 
         // screenHeight = Camera.main.orthographicSize * 2;
         originalMoveSpeed = moveSpeed;
@@ -41,7 +49,11 @@ public class PlayerController : MonoBehaviour {
 
     private void Update() {
         float vInput = Input.GetAxisRaw("Vertical");
-        transform.Translate(Vector2.up * vInput * moveSpeed * Time.deltaTime);
+        Vector3 newPosition = transform.position + new Vector3(0, vInput * moveSpeed * Time.deltaTime, 0);
+
+        // Clamp the player's position within the top and bottom boundaries
+        newPosition.y = Mathf.Clamp(newPosition.y, bottomBoundary, topBoundary);
+        transform.position = newPosition;
 
         if (Input.GetKeyDown(KeyCode.Space)) {
             if (openMouthCoroutine != null)
@@ -60,12 +72,10 @@ public class PlayerController : MonoBehaviour {
         isMouthOpen = false;
     }
 
-    private void OnTriggerEnter2D(Collider2D collision) {
+    private void OnTriggerStay2D(Collider2D collision) {
         if (collision.CompareTag("Food") && isMouthOpen) {
             Food food = collision.GetComponent<Food>();
-            if (food != null) {
-                food.OnEaten(FindObjectOfType<ScoreManager>(), this);
-            }
+            food.OnEaten(FindObjectOfType<ScoreManager>(), this);
         }
     }
 

@@ -11,8 +11,8 @@ public class FoodMover : MonoBehaviour {
     private float minY;
     private float maxY;
     private bool initialized = false;
-    private float waveOffset = 1.0f;  // Offset to shift the sine wave from [-1, 1] to [0, 2]
-    private float waveScale = 2.0f;   // Scale to normalize the sine wave to [0, 1]
+    private float waveOffset = 1.0f;  
+    private float waveScale = 2.0f;
 
     public void SetProperties(float speed, FoodSpawner.MovementPattern movementPattern, float minY = 0f, float maxY = 0f) {
         this.speed = speed;
@@ -50,6 +50,13 @@ public class FoodMover : MonoBehaviour {
     private void Update() {
         if (!initialized) return;
 
+            // Check if Ice Cream effect is active
+        if (FindObjectOfType<PlayerController>().IsIceCreamEffectActive()) {
+            speed = originalSpeed / 2; // Apply slow effect
+        } else {
+            speed = originalSpeed;
+        }
+
         switch (movementPattern)  {
             case FoodSpawner.MovementPattern.Straight:
                 transform.Translate(direction * speed * Time.deltaTime);
@@ -80,9 +87,8 @@ public class FoodMover : MonoBehaviour {
 
         // Calculate the direction vector for the rotation
         Vector2 movementDirection = new Vector2(direction.x * speed, Mathf.Cos(Time.time * waveFrequency * speed / originalSpeed) * (maxY - minY) / 2.0f);
-        float angle = Mathf.Atan2(movementDirection.y, movementDirection.x) * Mathf.Rad2Deg;
-        // Adjust the angle by 180 degrees to correct the facing direction
-         angle += 180;
+        float angle = (Mathf.Atan2(movementDirection.y, movementDirection.x) * Mathf.Rad2Deg) + 180;
+
         // Rotate the fish to point in the direction of movement
         transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
     }
