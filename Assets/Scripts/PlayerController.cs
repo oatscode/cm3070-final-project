@@ -2,24 +2,31 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour {
-    public float moveSpeed = 5;
+    public GameObject playerBody;
+    private SpriteRenderer spriteRenderer;
+    public float moveSpeed = 5;  // player move speed
     public float speedBoostMultiplier = 2f; // Multiplier for speed boost
     public float speedBoostDuration = 10f; // Duration for speed boost
-    private SpriteRenderer spriteRenderer;
-    private Coroutine openMouthCoroutine;
-    private Coroutine speedBoostCoroutine;
-    private Coroutine iceCreamCoroutine;
-    // private Coroutine magnetCoroutine;
+    public float magnetDuration = 10f; // Duration for magnet effect
+
+    // mouth open/close variables
     private bool isMouthOpen = false;
+    public float openMouthDuration = 0.25f;
+    private Coroutine openMouthCoroutine;
     public Sprite closedMouthSprite;
     public Sprite openMouthSprite;
-    public float openMouthDuration = 0.5f;
-    public GameObject playerBody;
-    // private float screenHeight;
+    
+    
+    private Coroutine speedBoostCoroutine;
+    private Coroutine iceCreamCoroutine;
+    private Coroutine magnetCoroutine;
+    
     private float originalMoveSpeed;
     private bool isIceCreamEffectActive = false;
+    private bool isMagnetEffectActive = false;
 
     public TextMeshProUGUI powerText;
 
@@ -28,8 +35,17 @@ public class PlayerController : MonoBehaviour {
     private float topBoundary;
     private float bottomBoundary;
 
-    // Track all FoodMover instances
-    // private List<FoodMover> activeFoodMovers = new List<FoodMover>();
+    // Power-up variables
+    public Image[] powerUpSlots;
+    private bool hasChilliPower = false;
+    private bool hasIceCreamPower = false;
+    private bool hasMagnetPower = false;
+    public Sprite chilliSprite;
+    public Sprite iceCreamSprite;
+    public Sprite magnetSprite;
+
+    // List to track FoodMovers affected by magnet effect
+    private List<FoodMover> magnetAffectedFoodMovers = new List<FoodMover>();
 
     private void Start() {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -38,29 +54,37 @@ public class PlayerController : MonoBehaviour {
         topBoundary = boundaryTop.transform.position.y;
         bottomBoundary = boundaryBottom.transform.position.y;
 
-        // screenHeight = Camera.main.orthographicSize * 2;
         originalMoveSpeed = moveSpeed;
 
-        if (powerText != null) {
-            powerText.text = "";
-        }
-
+        powerText.text = null;
     }
 
     private void Update() {
         float vInput = Input.GetAxisRaw("Vertical");
         Vector3 newPosition = transform.position + new Vector3(0, vInput * moveSpeed * Time.deltaTime, 0);
 
-        // Clamp the player's position within the top and bottom boundaries
+        // keep the player within the top and bottom boundaries
         newPosition.y = Mathf.Clamp(newPosition.y, bottomBoundary, topBoundary);
         transform.position = newPosition;
 
         if (Input.GetKeyDown(KeyCode.Space)) {
-            if (openMouthCoroutine != null)
-            {
+            if (openMouthCoroutine != null) {
                 StopCoroutine(openMouthCoroutine);
             }
             openMouthCoroutine = StartCoroutine(OpenMouth());
+        }
+
+       // Check for activation of stored power-ups
+        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) {
+            ActivateStoredChilliPowerUp();
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl)) {
+            ActivateStoredIceCreamPowerUp();
+        }
+
+        if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt)) {
+            ActivateStoredMagnetPowerUp();
         }
     }
 
@@ -72,7 +96,55 @@ public class PlayerController : MonoBehaviour {
         isMouthOpen = false;
     }
 
+    public void StorePowerUp(Food.PowerUpType powerUpType) {
+        if (powerUpType == Food.PowerUpType.Chilli) {
+            hasChilliPower = true;
+            UpdatePowerUpUI(0, chilliSprite);
+        } else if (powerUpType == Food.PowerUpType.IceCream) {
+            hasIceCreamPower = true;
+            UpdatePowerUpUI(1, iceCreamSprite);
+        } else if (powerUpType == Food.PowerUpType.Magnet) {
+            hasMagnetPower = true;
+            UpdatePowerUpUI(2, magnetSprite);
+        }
+    }
+
+    private void UpdatePowerUpUI(int slotIndex, Sprite sprite) {
+        if (slotIndex < powerUpSlots.Length) {
+            powerUpSlots[slotIndex].sprite = sprite;
+            powerUpSlots[slotIndex].preserveAspect = true;
+            Color colour = powerUpSlots[slotIndex].color;
+            colour.a = sprite ? 1f : 0.125f; // set alpha to 255 (1f) if sprite is not null, otherwise to 32 (0.125f)
+            powerUpSlots[slotIndex].color = colour;
+        }
+    }
+
+    private void ActivateStoredChilliPowerUp() {
+        if (hasChilliPower) {
+            ActivateSpeedBoost();
+            hasChilliPower = false;
+            UpdatePowerUpUI(0, null);
+        }
+    }
+
+    private void ActivateStoredIceCreamPowerUp() {
+        if (hasIceCreamPower) {
+            ActivateIceCreamEffect();
+            hasIceCreamPower = false;
+            UpdatePowerUpUI(1, null);
+        }
+    }
+
+    private void ActivateStoredMagnetPowerUp() {
+        if (hasMagnetPower) {
+            ActivateMagnetEffect();
+            hasMagnetPower = false;
+            UpdatePowerUpUI(2, null);
+        }
+    }
+
     private void OnTriggerStay2D(Collider2D collision) {
+        // "eat" a food if it's colliding with the player and player mouth is open
         if (collision.CompareTag("Food") && isMouthOpen) {
             Food food = collision.GetComponent<Food>();
             food.OnEaten(FindObjectOfType<ScoreManager>(), this);
@@ -113,41 +185,41 @@ public class PlayerController : MonoBehaviour {
     private IEnumerator IceCreamEffect() {
         isIceCreamEffectActive = true;
 
-        // Get all current FoodMover instances
+        // get all current FoodMover instances
         FoodMover[] foodMovers = FindObjectsOfType<FoodMover>();
 
-        // Reduce speed by half
+        // reduce speed by half
         foreach (var foodMover in foodMovers) {
             foodMover.SetSpeed(foodMover.GetSpeed() / 2);
         }
 
-        // Update PowerText to show "SLOW" in blue
+        // update power text box to show "SLOW" in blue
         if (powerText != null) {
             powerText.text = "<color=blue>SLOW</color>";
         }
 
-        // Slow down background music
+        // slow down background music
         SoundManager.instance.SetBackgroundMusicPitch(0.5f);
 
-        // Double the spawn intervals for all foods
-        //foodSpawner.AdjustSpawnIntervals(2f);
+        // double the spawn intervals for all foods
+        // foodSpawner.AdjustSpawnIntervals(2f);
 
-        yield return new WaitForSeconds(10f); // Duration of the Ice Cream effect
+        yield return new WaitForSeconds(10f); 
 
-        // Reset speed to original for all current food instances
+        // reset speed to original for all current food instances
         foreach (var foodMover in foodMovers) {
             foodMover.ResetToOriginalSpeed();
         }
 
         isIceCreamEffectActive = false;
 
-        // Reset spawn intervals to original
-        //foodSpawner.AdjustSpawnIntervals(0.5f);
+        // reset spawn intervals to original
+        // foodSpawner.AdjustSpawnIntervals(0.5f);
 
-        // Reset background music pitch
+        // reset background music pitch
         SoundManager.instance.SetBackgroundMusicPitch(1f);
 
-        // Reset PowerText
+        // reset PowerText
         if (powerText != null) {
             powerText.text = "";
         }
@@ -157,17 +229,47 @@ public class PlayerController : MonoBehaviour {
         return isIceCreamEffectActive;
     }
 
-    // public void ActivateMagnetEffect() {
-    //     if (magnetCoroutine != null) {
-    //         StopCoroutine(magnetCoroutine);
-    //     }
-    //     magnetCoroutine = StartCoroutine(MagnetEffect());
-    // }
+    public bool IsMagnetEffectActive() {
+        return isMagnetEffectActive;
+    }
 
-    // private IEnumerator MagnetEffect() {
-    //     // Placeholder for Magnet effect
-    //     Debug.Log("Magnet effect activated!");
-    //     yield return new WaitForSeconds(10f); // Example duration
-    //     Debug.Log("Magnet effect ended.");
-    // }
+    public void ActivateMagnetEffect() {
+        if (magnetCoroutine != null) {
+            StopCoroutine(magnetCoroutine);
+        }
+        magnetCoroutine = StartCoroutine(MagnetEffect());
+    }
+
+    private IEnumerator MagnetEffect() {
+        isMagnetEffectActive = true;
+
+        // Get all current FoodMover instances
+        FoodMover[] foodMovers = FindObjectsOfType<FoodMover>();
+
+        // change movement pattern to move towards the player
+        foreach (var foodMover in foodMovers) {
+            foodMover.SetMagnetTarget(transform);
+            magnetAffectedFoodMovers.Add(foodMover);
+        }
+
+        if (powerText != null) {
+            powerText.text = "<color=yellow>MAGNET</color>";
+        }
+
+        yield return new WaitForSeconds(magnetDuration);
+
+        isMagnetEffectActive = false;
+
+        // reset movement pattern to original
+        foreach (var foodMover in magnetAffectedFoodMovers) {
+            foodMover.ResetToOriginalMovementPattern();
+        }
+
+        magnetAffectedFoodMovers.Clear();
+
+        // reset PowerText
+        if (powerText != null) {
+            powerText.text = "";
+        }
+    }
 }

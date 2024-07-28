@@ -14,14 +14,14 @@ public class Food : MonoBehaviour {
             switch (powerUpType) {
                 case PowerUpType.Chilli:
                     //SoundManager.instance.PlaySpeed();
-                    player.ActivateSpeedBoost();
+                    player.StorePowerUp(powerUpType);
                     break;
                 case PowerUpType.IceCream:
                     //SoundManager.instance.PlaySlow();
-                    player.ActivateIceCreamEffect();
+                    player.StorePowerUp(powerUpType);
                     break;
                 case PowerUpType.Magnet:
-                    //player.ActivateMagnetEffect();
+                    player.StorePowerUp(powerUpType);
                     break;
             }
         }

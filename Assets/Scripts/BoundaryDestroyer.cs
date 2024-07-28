@@ -12,6 +12,9 @@ public class BoundaryDestroyer : MonoBehaviour {
     private string[] angerLevels = { "Happy", "Annoyed", "Frustrated", "Angry", "Furious", "Enraged", "Livid", "Seething", "Irate", "Infuriated" };
     public GameObject gameOverPanel;
 
+    public SpriteRenderer playerSpriteRenderer;
+    public SpriteRenderer playerBodySpriteRenderer;
+
     private void OnTriggerEnter2D(Collider2D collision) {
         if (collision.tag == "Food") {
             Destroy(collision.gameObject);
@@ -30,6 +33,7 @@ public class BoundaryDestroyer : MonoBehaviour {
         angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
 
         UpdateAngerText();
+        UpdatePlayerColors();
 
         // Game over if anger hits 100%
         if (angerMeterValue >= 1f) {
@@ -46,7 +50,20 @@ public class BoundaryDestroyer : MonoBehaviour {
         angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
 
         UpdateAngerText();
+        UpdatePlayerColors();
     }
+
+    private void UpdatePlayerColors() {
+        // PlayerBody color from RGB(0,204,0) to RGB(255,0,0)
+        Color playerBodyStartColour = new Color(0f / 255f, 204f / 255f, 0f / 255f);
+        Color playerBodyEndColour = new Color(255f / 255f, 0f / 255f, 0f / 255f);
+        playerBodySpriteRenderer.color = Color.Lerp(playerBodyStartColour, playerBodyEndColour, angerMeterValue);
+
+        // Player color from RGB(0,255,255) to RGB(255,255,255)
+        Color playerStartColour = new Color(0f / 255f, 255f / 255f, 255f / 255f);
+        Color playerEndColour = new Color(255f / 255f, 255f / 255f, 255f / 255f);
+        playerSpriteRenderer.color = Color.Lerp(playerStartColour, playerEndColour, angerMeterValue);
+    }  
 
     private void UpdateAngerText() {
         if (angerMeterValue >= 1f) {

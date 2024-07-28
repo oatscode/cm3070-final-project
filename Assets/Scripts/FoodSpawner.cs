@@ -22,9 +22,11 @@ public class FoodSpawner : MonoBehaviour {
     public GameObject foodRange;
     private BoxCollider2D foodRangeCollider;
     private List<IEnumerator> spawnCoroutines = new List<IEnumerator>();
+    private PlayerController playerController;
 
     private void Start() {
         foodRangeCollider = foodRange.GetComponent<BoxCollider2D>();
+        playerController = FindObjectOfType<PlayerController>();
 
         foreach (var food in foods) {
             var coroutine = SpawnFood(food);
@@ -45,6 +47,11 @@ public class FoodSpawner : MonoBehaviour {
             food.powerUpType = foodProperties.powerUpType; // Set the power-up type
 
             foodMover.SetProperties(foodProperties.speed, foodProperties.movementPattern, foodRangeCollider.bounds.min.y, foodRangeCollider.bounds.max.y);
+
+            // Check if magnet effect is active
+            if (playerController.IsMagnetEffectActive()) {
+                foodMover.SetMagnetTarget(playerController.transform);
+            }
         }
     }
 
