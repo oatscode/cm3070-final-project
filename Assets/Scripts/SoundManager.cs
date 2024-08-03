@@ -6,6 +6,7 @@ public class SoundManager : MonoBehaviour {
     public AudioSource biteSource;
     public AudioSource speedSource;
     public AudioSource slowSource;
+    public AudioSource magnetSource;
     public AudioSource gameOverSource;
     public AudioSource backgroundMusicSource; // Background music source
 
@@ -37,6 +38,10 @@ public class SoundManager : MonoBehaviour {
         slowSource.Play();
     }
 
+    public void PlayMagnet() {
+        magnetSource.Play();
+    }
+
     public void PlayGameOver() {
         gameOverSource.Play();
     }
@@ -57,8 +62,6 @@ public class SoundManager : MonoBehaviour {
     }
 
     public void SetBackgroundMusicPitch(float pitch) {
-        if (backgroundMusicSource != null) {
-            backgroundMusicSource.pitch = pitch;
-        }
+        backgroundMusicSource.pitch = pitch;
     }
 }

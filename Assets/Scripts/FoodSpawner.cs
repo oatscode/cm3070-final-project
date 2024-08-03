@@ -23,6 +23,19 @@ public class FoodSpawner : MonoBehaviour {
     private BoxCollider2D foodRangeCollider;
     private List<IEnumerator> spawnCoroutines = new List<IEnumerator>();
     private PlayerController playerController;
+    
+
+    private float foodSpeedMultiplier = 1.0f;
+
+        public void IncreaseFoodSpeed(float multiplier) {
+        foodSpeedMultiplier *= multiplier;
+
+        // Increase speed of existing food instances
+        FoodMover[] existingFoodMovers = FindObjectsOfType<FoodMover>();
+        foreach (FoodMover foodMover in existingFoodMovers) {
+            foodMover.IncreaseSpeed(multiplier);
+        }
+    }
 
     private void Start() {
         foodRangeCollider = foodRange.GetComponent<BoxCollider2D>();
@@ -46,7 +59,7 @@ public class FoodSpawner : MonoBehaviour {
             Food food = foodInstance.GetComponent<Food>();
             food.powerUpType = foodProperties.powerUpType; // Set the power-up type
 
-            foodMover.SetProperties(foodProperties.speed, foodProperties.movementPattern, foodRangeCollider.bounds.min.y, foodRangeCollider.bounds.max.y);
+            foodMover.SetProperties(foodProperties.speed * foodSpeedMultiplier, foodProperties.movementPattern, foodRangeCollider.bounds.min.y, foodRangeCollider.bounds.max.y);
 
             // Check if magnet effect is active
             if (playerController.IsMagnetEffectActive()) {

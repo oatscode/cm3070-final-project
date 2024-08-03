@@ -1,13 +1,14 @@
 using UnityEngine;
 
 public class Food : MonoBehaviour {
-    public int points = 100;
+    public int basePoints = 100;
     public enum PowerUpType { None, Chilli, IceCream, Magnet }
     public PowerUpType powerUpType = PowerUpType.None;
 
     public void OnEaten(ScoreManager scoreManager, PlayerController player) {
+        scoreManager.AddScore(basePoints);
         if (scoreManager != null) {
-            scoreManager.AddScore(points);
+            scoreManager.AddScore(basePoints);
         }
         if (player != null) {
             Debug.Log(powerUpType);

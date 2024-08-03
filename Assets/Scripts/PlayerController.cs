@@ -19,7 +19,6 @@ public class PlayerController : MonoBehaviour {
     public Sprite closedMouthSprite;
     public Sprite openMouthSprite;
     
-    
     private Coroutine speedBoostCoroutine;
     private Coroutine iceCreamCoroutine;
     private Coroutine magnetCoroutine;
@@ -88,6 +87,7 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+
     private IEnumerator OpenMouth() {
         isMouthOpen = true;
         spriteRenderer.sprite = openMouthSprite;
@@ -140,6 +140,7 @@ public class PlayerController : MonoBehaviour {
             ActivateMagnetEffect();
             hasMagnetPower = false;
             UpdatePowerUpUI(2, null);
+            SoundManager.instance.PlayMagnet();
         }
     }
 
@@ -148,7 +149,8 @@ public class PlayerController : MonoBehaviour {
         if (collision.CompareTag("Food") && isMouthOpen) {
             Food food = collision.GetComponent<Food>();
             food.OnEaten(FindObjectOfType<ScoreManager>(), this);
-        }
+
+          }
     }
 
     public void ActivateSpeedBoost() {
@@ -258,6 +260,7 @@ public class PlayerController : MonoBehaviour {
 
         yield return new WaitForSeconds(magnetDuration);
 
+        SoundManager.instance.magnetSource.Stop();
         isMagnetEffectActive = false;
 
         // reset movement pattern to original
@@ -271,5 +274,10 @@ public class PlayerController : MonoBehaviour {
         if (powerText != null) {
             powerText.text = "";
         }
+    }
+
+    public void ResetPlayerBodySize() {
+        playerBody.transform.localScale = new Vector3(1f, 0.66f, playerBody.transform.localScale.z);
+        playerBody.transform.localPosition = new Vector3(0, playerBody.transform.localPosition.y, playerBody.transform.localPosition.z);
     }
 }

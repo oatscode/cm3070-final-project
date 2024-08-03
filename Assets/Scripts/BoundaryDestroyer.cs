@@ -25,17 +25,24 @@ public class BoundaryDestroyer : MonoBehaviour {
         }
     }
 
+    public void ResetAngerMeter() {
+        angerMeterValue = 0f;
+        angerMeterFill.fillAmount = angerMeterValue;
+        angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
+        UpdateAngerText();
+    }
+
     private void IncrementAngerMeter(float increment) {
         angerMeterValue += increment;
         angerMeterFill.fillAmount = angerMeterValue;
 
-        // Change color based on the fill amount
+        // change colour based on the fill amount
         angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
 
         UpdateAngerText();
         UpdatePlayerColors();
 
-        // Game over if anger hits 100%
+        // game over if anger hits 100%
         if (angerMeterValue >= 1f) {
             GameOver();
         }
@@ -46,7 +53,7 @@ public class BoundaryDestroyer : MonoBehaviour {
         angerMeterValue = Mathf.Clamp(angerMeterValue, 0, 1);
         angerMeterFill.fillAmount = angerMeterValue;
 
-        // Change colour based on the fill amount
+        // change colour based on the fill amount
         angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
 
         UpdateAngerText();
@@ -54,12 +61,10 @@ public class BoundaryDestroyer : MonoBehaviour {
     }
 
     private void UpdatePlayerColors() {
-        // PlayerBody color from RGB(0,204,0) to RGB(255,0,0)
         Color playerBodyStartColour = new Color(0f / 255f, 204f / 255f, 0f / 255f);
         Color playerBodyEndColour = new Color(255f / 255f, 0f / 255f, 0f / 255f);
         playerBodySpriteRenderer.color = Color.Lerp(playerBodyStartColour, playerBodyEndColour, angerMeterValue);
 
-        // Player color from RGB(0,255,255) to RGB(255,255,255)
         Color playerStartColour = new Color(0f / 255f, 255f / 255f, 255f / 255f);
         Color playerEndColour = new Color(255f / 255f, 255f / 255f, 255f / 255f);
         playerSpriteRenderer.color = Color.Lerp(playerStartColour, playerEndColour, angerMeterValue);
@@ -80,17 +85,17 @@ public class BoundaryDestroyer : MonoBehaviour {
 
     private void GameOver() {
         gameOverPanel.SetActive(true);       
-        SoundManager.instance.StopBackgroundMusic(); // Stop background music
-        SoundManager.instance.PlayGameOver(); // Play game over sound
-        Time.timeScale = 0f; // Pause the game
+        SoundManager.instance.StopBackgroundMusic(); // stop background music
+        SoundManager.instance.PlayGameOver(); // play game over sound
+        Time.timeScale = 0f; // pause the game
         
     }
 
     public void RestartGame() {
-        Time.timeScale = 1f; // Unpause the game
+        Time.timeScale = 1f; // unpause the game
         SoundManager.instance.PlayBackgroundMusic();
         
-        // Reload the scene
+        // reload the scene
         SceneManager.LoadScene(SceneManager.GetActiveScene().name);
     }
 }

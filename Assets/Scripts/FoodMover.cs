@@ -25,36 +25,39 @@ public class FoodMover : MonoBehaviour {
         this.minY = minY;
         this.maxY = maxY;
 
-        // Check if Ice Cream effect is active
+        // check if Ice Cream effect is active
         if (FindObjectOfType<PlayerController>().IsIceCreamEffectActive()) {
-            this.speed /= 2; // Apply slow effect
+            this.speed /= 2; // apply slow effect
         }
         
-        // Initialize direction for bounce movement
+        // initialize direction for bounce movement
         if (movementPattern == FoodSpawner.MovementPattern.Bounce) {
             float angle = 45f * Mathf.Deg2Rad;
             if (Random.value > 0.5f) {
-                direction = new Vector2(-Mathf.Cos(angle), Mathf.Sin(angle)); // Moving up-right
+                direction = new Vector2(-Mathf.Cos(angle), Mathf.Sin(angle)); // moving up-right
             }
             else {
-                direction = new Vector2(-Mathf.Cos(angle), -Mathf.Sin(angle)); // Moving down-right
+                direction = new Vector2(-Mathf.Cos(angle), -Mathf.Sin(angle)); // moving down-right
             }
         }
         else {
             direction = Vector2.left;
         }
 
-        // Adjust direction based on the object's rotation
+        // adjust direction based on the object's rotation
         direction = Quaternion.Euler(0, 0, transform.eulerAngles.z) * direction;
         direction.x = -Mathf.Abs(direction.x); // Ensure the x direction is leftward
 
         initialized = true;
     }
 
+    public void IncreaseSpeed(float multiplier) {
+        speed *= multiplier;
+    }
     private void Update() {
         if (!initialized) return;
 
-        // Check if Ice Cream effect is active
+        // check if Ice Cream effect is active
         if (FindObjectOfType<PlayerController>().IsIceCreamEffectActive()) {
             speed = originalSpeed / 2; // Apply slow effect
         } else {
