@@ -7,9 +7,6 @@ public class Food : MonoBehaviour {
 
     public void OnEaten(ScoreManager scoreManager, PlayerController player) {
         scoreManager.AddScore(basePoints);
-        if (scoreManager != null) {
-            scoreManager.AddScore(basePoints);
-        }
         if (player != null) {
             Debug.Log(powerUpType);
             switch (powerUpType) {

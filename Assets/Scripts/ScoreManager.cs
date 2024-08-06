@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 using TMPro;
 
 public class ScoreManager : MonoBehaviour {
@@ -6,6 +7,8 @@ public class ScoreManager : MonoBehaviour {
     public TextMeshProUGUI comboText;
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI debugText;
+    public TextMeshProUGUI multText;
+    public TextMeshProUGUI scoreFlashText;
     public GameObject uiCanvas;
     private int score = 0;
     private int consecutiveEaten = 0;
@@ -16,32 +19,47 @@ public class ScoreManager : MonoBehaviour {
     public GameObject playerBody;
     public PlayerController playerController;
     public FoodSpawner foodSpawner;
-
+    
     private float pointMultiplier = 1f;
 
     private void Start() {
         UpdateScore();
         ResetCombo();
         UpdateLevelText();
+        UpdateMultiplierText();
     }
 
     private void UpdateLevelText() {
         levelText.text = "Level: " + level;
     }
 
+    private void UpdateMultiplierText() {
+        if (multText != null) {
+            multText.text = pointMultiplier.ToString("F1") + "x";
+        }
+    }
+
+    private IEnumerator ShowScoreFlash(int points) {
+        if (scoreFlashText != null) {
+            scoreFlashText.text = "+" + points.ToString();
+            yield return new WaitForSeconds(0.3f);
+            scoreFlashText.text = "";
+        }
+    }
+
     public void AddScore(int basePoints) {
+        //float levelMultiplier = 1f + (level - 1) * 0.1f;
         int points = Mathf.RoundToInt(basePoints * pointMultiplier);
-        if (level > 1) {
-            points = Mathf.CeilToInt(points * (1.2f * level));
-        } 
         score += points;
         consecutiveEaten++;
         UpdateScore();
         //UpdateCombo();
 
+        StartCoroutine(ShowScoreFlash(points));
+
         // Increase PlayerBody Y scale
         Vector3 newScale = playerBody.transform.localScale;
-        newScale.y += 0.1f;
+        newScale.y += 0.2f;
         playerBody.transform.localScale = newScale;
 
         // check for win condition
@@ -70,8 +88,9 @@ public class ScoreManager : MonoBehaviour {
         SoundManager.instance.SetBackgroundMusicPitch(1.05f);
 
         // increase food speed and points
-        foodSpawner.IncreaseFoodSpeed(1.2f);
-        pointMultiplier *= 1.2f;
+        foodSpawner.IncreaseFoodSpeed(1.3f);
+        pointMultiplier += 0.5f;
+        UpdateMultiplierText();
 
         UpdateLevelText();
     }
