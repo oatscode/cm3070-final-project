@@ -2,6 +2,8 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using System.Collections;
+
 
 public class BoundaryDestroyer : MonoBehaviour {
     public TextMeshProUGUI missedText;
@@ -14,6 +16,23 @@ public class BoundaryDestroyer : MonoBehaviour {
 
     public SpriteRenderer playerSpriteRenderer;
     public SpriteRenderer playerBodySpriteRenderer;
+
+    public TextMeshProUGUI finalScoreText;
+    private ScoreManager scoreManager;
+
+    public TextMeshProUGUI[] rankTexts; // Assign these in the Inspector, from Rank10 to Rank1
+    public AudioClip successSound;
+    private AudioSource audioSource;
+    public int rankThreshold = 1000; // Points needed for each rank
+
+    private void Start() {
+        scoreManager = FindObjectOfType<ScoreManager>();
+    }
+
+    private void Awake()
+    {
+        audioSource = gameObject.AddComponent<AudioSource>();
+    }
 
     private void OnTriggerEnter2D(Collider2D collision) {
         if (collision.tag == "Food") {
@@ -84,18 +103,56 @@ public class BoundaryDestroyer : MonoBehaviour {
     }
 
     private void GameOver() {
+        RemoveAllFoodItems();
+        RemoveAngerMeter();
         gameOverPanel.SetActive(true);       
         SoundManager.instance.StopBackgroundMusic(); // stop background music
         SoundManager.instance.PlayGameOver(); // play game over sound
         Time.timeScale = 0f; // pause the game
-        
+
+        // display score
+        int currentScore = scoreManager.GetCurrentScore();
+        finalScoreText.text = currentScore.ToString();
+        StartCoroutine(RevealRanks(currentScore));
+    }
+
+    private IEnumerator RevealRanks(int finalScore) {
+        int achievedRank = Mathf.Clamp(10 - (finalScore / rankThreshold), 1, 10);
+
+        for (int i = rankTexts.Length - 1; i >= achievedRank - 1; i--) {
+            rankTexts[i].gameObject.SetActive(true);
+            
+            // increase pitch of rank up sound
+            float pitch = 1f + (0.03f * (rankTexts.Length - 1 - i));
+            audioSource.pitch = pitch;
+            audioSource.PlayOneShot(successSound);
+
+            yield return new WaitForSecondsRealtime(1f);
+        }
     }
 
     public void RestartGame() {
+        foreach (var rankText in rankTexts) {
+            rankText.gameObject.SetActive(false);
+        }
         Time.timeScale = 1f; // unpause the game
+        SoundManager.instance.SetBackgroundMusicPitch(1f);
         SoundManager.instance.PlayBackgroundMusic();
         
-        // reload the scene
-        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+       SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    private void RemoveAllFoodItems() {
+        GameObject[] foodItems = GameObject.FindGameObjectsWithTag("Food");
+        foreach (GameObject foodItem in foodItems) {
+            Destroy(foodItem);
+        }
+    }
+
+    private void RemoveAngerMeter() {
+    GameObject[] angerItems = GameObject.FindGameObjectsWithTag("AngerMeter");
+        foreach (GameObject angerItem in angerItems) {
+            angerItem.SetActive(false);
+        }
     }
 }

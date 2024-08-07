@@ -33,6 +33,10 @@ public class ScoreManager : MonoBehaviour {
         levelText.text = "Level: " + level;
     }
 
+    public int GetCurrentScore() {
+        return score;
+    }
+
     private void UpdateMultiplierText() {
         if (multText != null) {
             multText.text = pointMultiplier.ToString("F1") + "x";

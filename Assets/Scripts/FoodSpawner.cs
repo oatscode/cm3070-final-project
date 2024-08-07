@@ -24,7 +24,6 @@ public class FoodSpawner : MonoBehaviour {
     private List<IEnumerator> spawnCoroutines = new List<IEnumerator>();
     private PlayerController playerController;
     
-
     private float foodSpeedMultiplier = 1.0f;
 
         public void IncreaseFoodSpeed(float multiplier) {
@@ -52,12 +51,12 @@ public class FoodSpawner : MonoBehaviour {
         while (true) {
             yield return new WaitForSeconds(foodProperties.spawnInterval);
             Vector2 spawnPosition = GetRandomSpawnPosition();
-            Quaternion spawnRotation = foodProperties.prefab.transform.rotation; // Use the prefab's default rotation
+            Quaternion spawnRotation = foodProperties.prefab.transform.rotation; // use the prefab's default rotation
 
             GameObject foodInstance = Instantiate(foodProperties.prefab, spawnPosition, spawnRotation);
             FoodMover foodMover = foodInstance.AddComponent<FoodMover>();
             Food food = foodInstance.GetComponent<Food>();
-            food.powerUpType = foodProperties.powerUpType; // Set the power-up type
+            food.powerUpType = foodProperties.powerUpType; // set the power-up type
 
             foodMover.SetProperties(foodProperties.speed * foodSpeedMultiplier, foodProperties.movementPattern, foodRangeCollider.bounds.min.y, foodRangeCollider.bounds.max.y);
 

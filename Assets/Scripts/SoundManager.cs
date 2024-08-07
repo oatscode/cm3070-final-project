@@ -8,21 +8,21 @@ public class SoundManager : MonoBehaviour {
     public AudioSource slowSource;
     public AudioSource magnetSource;
     public AudioSource gameOverSource;
-    public AudioSource backgroundMusicSource; // Background music source
+    public AudioSource backgroundMusicSource;
 
     void Awake() {
-        // Make sure there is only one instance of the SoundManager
-        if (instance == null)
+        // ensure only one instance of SoundManager
+        if (instance == null) {
             instance = this;
-        else if (instance != this)
+        } else if (instance != this) {
             Destroy(gameObject);
+        }
 
-        // Set SoundManager to DontDestroyOnLoad so that it persists across scenes
+        // set SoundManager to DontDestroyOnLoad so that it persists across scene change
         DontDestroyOnLoad(gameObject);
     }
 
-    void Start()
-    {
+    void Start() {
         PlayBackgroundMusic();
     }
 
@@ -47,16 +47,14 @@ public class SoundManager : MonoBehaviour {
     }
 
     public void PlayBackgroundMusic() {
-        if (backgroundMusicSource != null && !backgroundMusicSource.isPlaying)
-        {
-            backgroundMusicSource.loop = true; // loop
+        if (backgroundMusicSource != null && !backgroundMusicSource.isPlaying) {
+            backgroundMusicSource.loop = true; // loop music
             backgroundMusicSource.Play();
         }
     }
 
     public void StopBackgroundMusic() {
-        if (backgroundMusicSource != null && backgroundMusicSource.isPlaying)
-        {
+        if (backgroundMusicSource != null && backgroundMusicSource.isPlaying) {
             backgroundMusicSource.Stop();
         }
     }

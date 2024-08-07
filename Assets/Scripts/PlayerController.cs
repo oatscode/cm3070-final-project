@@ -7,10 +7,10 @@ using UnityEngine.UI;
 public class PlayerController : MonoBehaviour {
     public GameObject playerBody;
     private SpriteRenderer spriteRenderer;
-    public float moveSpeed = 5;  // player move speed
-    public float speedBoostMultiplier = 2f; // Multiplier for speed boost
-    public float speedBoostDuration = 10f; // Duration for speed boost
-    public float magnetDuration = 10f; // Duration for magnet effect
+    public float moveSpeed = 5;
+    public float speedBoostMultiplier = 2f;
+    public float speedBoostDuration = 10f; 
+    public float magnetDuration = 10f; 
 
     // mouth open/close variables
     private bool isMouthOpen = false;
@@ -34,7 +34,7 @@ public class PlayerController : MonoBehaviour {
     private float topBoundary;
     private float bottomBoundary;
 
-    // Power-up variables
+    // power-up variables
     public Image[] powerUpSlots;
     private bool hasChilliPower = false;
     private bool hasIceCreamPower = false;
@@ -43,7 +43,7 @@ public class PlayerController : MonoBehaviour {
     public Sprite iceCreamSprite;
     public Sprite magnetSprite;
 
-    // List to track FoodMovers affected by magnet effect
+    // list to track FoodMovers affected by magnet effect
     private List<FoodMover> magnetAffectedFoodMovers = new List<FoodMover>();
 
     private void Start() {
@@ -73,7 +73,7 @@ public class PlayerController : MonoBehaviour {
             openMouthCoroutine = StartCoroutine(OpenMouth());
         }
 
-       // Check for activation of stored power-ups
+        // check for activation of stored power-ups
         if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) {
             ActivateStoredChilliPowerUp();
         }
@@ -171,7 +171,7 @@ public class PlayerController : MonoBehaviour {
 
         moveSpeed = originalMoveSpeed;
 
-        // Reset PowerText
+        // reset PowerText
         if (powerText != null) {
             powerText.text = "";
         }
@@ -245,7 +245,7 @@ public class PlayerController : MonoBehaviour {
     private IEnumerator MagnetEffect() {
         isMagnetEffectActive = true;
 
-        // Get all current FoodMover instances
+        // get all current FoodMover instances
         FoodMover[] foodMovers = FindObjectsOfType<FoodMover>();
 
         // change movement pattern to move towards the player
