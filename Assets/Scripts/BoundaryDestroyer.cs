@@ -20,17 +20,16 @@ public class BoundaryDestroyer : MonoBehaviour {
     public TextMeshProUGUI finalScoreText;
     private ScoreManager scoreManager;
 
-    public TextMeshProUGUI[] rankTexts; // Assign these in the Inspector, from Rank10 to Rank1
+    public TextMeshProUGUI[] rankTexts;
     public AudioClip successSound;
     private AudioSource audioSource;
-    public int rankThreshold = 1000; // Points needed for each rank
+    public int rankThreshold = 10000; // points needed for each rank
 
     private void Start() {
         scoreManager = FindObjectOfType<ScoreManager>();
     }
 
-    private void Awake()
-    {
+    private void Awake() {
         audioSource = gameObject.AddComponent<AudioSource>();
     }
 
@@ -39,8 +38,8 @@ public class BoundaryDestroyer : MonoBehaviour {
             Destroy(collision.gameObject);
             missedCount++;
             UpdateMissedText();
-            IncrementAngerMeter(0.1f); // Increase by 10%
-            FindObjectOfType<ScoreManager>().ResetCombo(); // Reset the combo meter
+            IncrementAngerMeter(0.1f); // increase by 10%
+            FindObjectOfType<ScoreManager>().ResetCombo(); // reset the combo meter
         }
     }
 
@@ -118,7 +117,9 @@ public class BoundaryDestroyer : MonoBehaviour {
 
     private IEnumerator RevealRanks(int finalScore) {
         int achievedRank = Mathf.Clamp(10 - (finalScore / rankThreshold), 1, 10);
-
+        // Debug.Log("achievedRank " + achievedRank);
+        // Debug.Log("rankTexts.Length - 1 " + (rankTexts.Length - 1));
+        // Debug.Log("rankThreshold " + achievedRank);
         for (int i = rankTexts.Length - 1; i >= achievedRank - 1; i--) {
             rankTexts[i].gameObject.SetActive(true);
             
