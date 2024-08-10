@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using TMPro;
+using Unity.VisualScripting;
 
 public class ScoreManager : MonoBehaviour {
     public TextMeshProUGUI scoreText;
@@ -9,12 +10,13 @@ public class ScoreManager : MonoBehaviour {
     public TextMeshProUGUI debugText;
     public TextMeshProUGUI multText;
     public TextMeshProUGUI scoreFlashText;
+    public GameObject levelFlashText;
     public GameObject uiCanvas;
     private int score = 0;
     private int consecutiveEaten = 0;
     private float minBodyHeightScale = 0.66f;
     private float maxBodyHeightScale = 6.8f;
-    private int level = 1; 
+    public int level = 1; 
     public BoundaryDestroyer boundaryDestroyer;
     public GameObject playerBody;
     public PlayerController playerController;
@@ -27,6 +29,7 @@ public class ScoreManager : MonoBehaviour {
         ResetCombo();
         UpdateLevelText();
         UpdateMultiplierText();
+        levelFlashText.SetActive(false);
     }
 
     private void UpdateLevelText() {
@@ -43,11 +46,27 @@ public class ScoreManager : MonoBehaviour {
         }
     }
 
+    private IEnumerator PlayLevelUpAnimation() {
+        // Enable the LevelFlashText object
+        levelFlashText.SetActive(true);
+
+        // Wait for the duration of the animation (assuming 1 second for the example)
+        yield return new WaitForSeconds(1.3f); // Adjust this to match your animation length
+
+        // Disable the LevelFlashText object after the animation is complete
+        levelFlashText.SetActive(false);
+    }
+
     private IEnumerator ShowScoreFlash(int points) {
         if (scoreFlashText != null) {
+            int scoreFlashXpos = -5;
+            RectTransform scoreFlashRect = scoreFlashText.GetComponent<RectTransform>();
+            Vector3 playerPos = playerBody.transform.position;
+            scoreFlashRect.position = new Vector3(scoreFlashXpos, playerPos.y, transform.position.z);
+
             scoreFlashText.text = "+" + points.ToString();
             yield return new WaitForSeconds(0.3f);
-            scoreFlashText.text = "";
+            scoreFlashText.text = null;
         }
     }
 
@@ -88,8 +107,10 @@ public class ScoreManager : MonoBehaviour {
 
         // reset anger level
         boundaryDestroyer.ResetAngerMeter();
-        // increase speed of the background music
-        SoundManager.instance.SetBackgroundMusicPitch(1.05f);
+
+        // calculate the BGM pitch based on the level
+        float newPitch = 1f + (level - 1) * 0.05f;
+        SoundManager.instance.SetBackgroundMusicPitch(newPitch);
 
         // increase food speed and points
         foodSpawner.IncreaseFoodSpeed(1.3f);
@@ -97,6 +118,10 @@ public class ScoreManager : MonoBehaviour {
         UpdateMultiplierText();
 
         UpdateLevelText();
+
+        if (levelFlashText != null) {
+            StartCoroutine(PlayLevelUpAnimation());
+        }
     }
 
     public void ResetCombo() {

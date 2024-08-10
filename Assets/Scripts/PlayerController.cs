@@ -218,13 +218,11 @@ public class PlayerController : MonoBehaviour {
         // reset spawn intervals to original
         // foodSpawner.AdjustSpawnIntervals(0.5f);
 
-        // reset background music pitch
-        SoundManager.instance.SetBackgroundMusicPitch(1f);
+        // calculate the BGM pitch based on the level
+        float currentLevelPitch = 1f + (FindObjectOfType<ScoreManager>().level - 1) * 0.05f;
+        SoundManager.instance.SetBackgroundMusicPitch(currentLevelPitch);
 
-        // reset PowerText
-        if (powerText != null) {
-            powerText.text = "";
-        }
+        powerText.text = "";
     }
 
     public bool IsIceCreamEffectActive() {
