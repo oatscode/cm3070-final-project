@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class Food : MonoBehaviour {
     public int basePoints = 100;
-    public enum PowerUpType { None, Chilli, IceCream, Magnet }
+    public enum PowerUpType { None, Chilli, IceCream, Magnet, Rotten }
     public PowerUpType powerUpType = PowerUpType.None;
 
     public void OnEaten(ScoreManager scoreManager, PlayerController player) {
@@ -19,6 +19,9 @@ public class Food : MonoBehaviour {
                     break;
                 case PowerUpType.Magnet:
                     player.StorePowerUp(powerUpType);
+                    break;
+                case PowerUpType.Rotten:
+                    player.ActivateRottenEffect();
                     break;
             }
         }

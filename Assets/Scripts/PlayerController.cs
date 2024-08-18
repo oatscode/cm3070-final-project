@@ -43,6 +43,11 @@ public class PlayerController : MonoBehaviour {
     public Sprite iceCreamSprite;
     public Sprite magnetSprite;
 
+    public Sprite[] mouthClosedSprites;
+    public Sprite[] mouthOpenSprites;
+
+    private Coroutine rottenCoroutine;
+
     // list to track FoodMovers affected by magnet effect
     private List<FoodMover> magnetAffectedFoodMovers = new List<FoodMover>();
 
@@ -87,12 +92,40 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
+    public void ActivateRottenEffect() {
+        if (rottenCoroutine != null) {
+            StopCoroutine(rottenCoroutine);
+        }
+        rottenCoroutine = StartCoroutine(RottenEffect());
+    }
+
+    private IEnumerator RottenEffect() {
+        float originalSpeed = moveSpeed;
+        moveSpeed *= 0.2f;  // Slow down to 20% of the original speed
+
+        float elapsed = 0f;
+        Vector3 originalPosition = transform.position;
+
+        while (elapsed < 1f) {
+            float jitterAmount = Mathf.Sin(elapsed * 40) * 0.1f;  // Adjust jitter intensity as needed
+            transform.position = new Vector3(originalPosition.x, originalPosition.y + jitterAmount, originalPosition.z);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = originalPosition;  // Reset position after jitter effect ends
+        moveSpeed = originalSpeed;  // Reset the speed back to normal
+    }
 
     private IEnumerator OpenMouth() {
         isMouthOpen = true;
-        spriteRenderer.sprite = openMouthSprite;
+        int angerIndex = Mathf.Clamp(Mathf.FloorToInt(FindObjectOfType<BoundaryDestroyer>().angerMeterValue * 10), 0, 9);
+        spriteRenderer.sprite = mouthOpenSprites[angerIndex];
         yield return new WaitForSeconds(openMouthDuration);
-        spriteRenderer.sprite = closedMouthSprite;
+        // spriteRenderer.sprite = closedMouthSprite;
+        
+        spriteRenderer.sprite = mouthClosedSprites[angerIndex];
         isMouthOpen = false;
     }
 

@@ -9,9 +9,9 @@ public class BoundaryDestroyer : MonoBehaviour {
     public TextMeshProUGUI missedText;
     private int missedCount = 0;
     public Image angerMeterFill;
-    private float angerMeterValue = 0f; 
+    public float angerMeterValue = 0f; 
     public TextMeshProUGUI angerText;
-    private string[] angerLevels = { "Happy", "Annoyed", "Frustrated", "Angry", "Furious", "Enraged", "Livid", "Seething", "Irate", "Infuriated" };
+    private string[] angerLevels = { "Happy", "Pleased", "Content", "Neutral", "Irritated", "Annoyed", "Frustrated", "Angry", "Enraged", "Furious" };
     public GameObject gameOverPanel;
 
     public SpriteRenderer playerSpriteRenderer;
@@ -35,6 +35,16 @@ public class BoundaryDestroyer : MonoBehaviour {
 
     private void OnTriggerEnter2D(Collider2D collision) {
         if (collision.tag == "Food") {
+
+            Food food = collision.GetComponent<Food>();
+
+            // check if the missed food is rotten
+            if (food.powerUpType == Food.PowerUpType.Rotten) {
+                // don't increment the anger meter for rotten food
+                Destroy(collision.gameObject);
+                return;
+            }
+            
             Destroy(collision.gameObject);
             missedCount++;
             UpdateMissedText();
@@ -58,7 +68,7 @@ public class BoundaryDestroyer : MonoBehaviour {
         angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
 
         UpdateAngerText();
-        UpdatePlayerColors();
+        UpdatePlayerColours();
 
         // game over if anger hits 100%
         if (angerMeterValue >= 1f) {
@@ -75,17 +85,20 @@ public class BoundaryDestroyer : MonoBehaviour {
         angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
 
         UpdateAngerText();
-        UpdatePlayerColors();
+        UpdatePlayerColours();
     }
 
-    private void UpdatePlayerColors() {
+    private void UpdatePlayerColours() {
+        int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerMeterValue * 10), 0, 9);
         Color playerBodyStartColour = new Color(0f / 255f, 204f / 255f, 0f / 255f);
         Color playerBodyEndColour = new Color(255f / 255f, 0f / 255f, 0f / 255f);
         playerBodySpriteRenderer.color = Color.Lerp(playerBodyStartColour, playerBodyEndColour, angerMeterValue);
 
-        Color playerStartColour = new Color(0f / 255f, 255f / 255f, 255f / 255f);
-        Color playerEndColour = new Color(255f / 255f, 255f / 255f, 255f / 255f);
-        playerSpriteRenderer.color = Color.Lerp(playerStartColour, playerEndColour, angerMeterValue);
+        // Color playerStartColour = new Color(0f / 255f, 255f / 255f, 255f / 255f);
+        // Color playerEndColour = new Color(255f / 255f, 255f / 255f, 255f / 255f);
+        // playerSpriteRenderer.color = Color.Lerp(playerStartColour, playerEndColour, angerMeterValue);
+
+        playerSpriteRenderer.sprite = FindObjectOfType<PlayerController>().mouthClosedSprites[angerIndex];
     }  
 
     private void UpdateAngerText() {
@@ -141,6 +154,10 @@ public class BoundaryDestroyer : MonoBehaviour {
         SoundManager.instance.PlayBackgroundMusic();
         
        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
+
+    public void ExitGame() { 
+        Application.Quit();
     }
 
     private void RemoveAllFoodItems() {

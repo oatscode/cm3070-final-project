@@ -119,9 +119,7 @@ public class ScoreManager : MonoBehaviour {
 
         UpdateLevelText();
 
-        if (levelFlashText != null) {
-            StartCoroutine(PlayLevelUpAnimation());
-        }
+        StartCoroutine(PlayLevelUpAnimation());
     }
 
     public void ResetCombo() {
