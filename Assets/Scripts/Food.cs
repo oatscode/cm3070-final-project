@@ -10,11 +10,9 @@ public class Food : MonoBehaviour {
         if (player != null) {
             switch (powerUpType) {
                 case PowerUpType.Chilli:
-                    //SoundManager.instance.PlaySpeed();
                     player.StorePowerUp(powerUpType);
                     break;
                 case PowerUpType.IceCream:
-                    //SoundManager.instance.PlaySlow();
                     player.StorePowerUp(powerUpType);
                     break;
                 case PowerUpType.Magnet:

@@ -1,14 +1,16 @@
 using UnityEngine;
+using System.Collections;
 
 public class SoundManager : MonoBehaviour {
     public static SoundManager instance = null;
 
-    public AudioSource biteSource;
-    public AudioSource speedSource;
-    public AudioSource slowSource;
-    public AudioSource magnetSource;
-    public AudioSource gameOverSource;
-    public AudioSource backgroundMusicSource;
+    public AudioSource biteSound;
+    public AudioSource sickSound;
+    public AudioSource speedSound;
+    public AudioSource magnetSound;
+    public AudioSource levelUpSound;
+    public AudioSource gameOverSound;
+    public AudioSource backgroundMusic;
 
     void Awake() {
         // ensure only one instance of SoundManager
@@ -17,9 +19,8 @@ public class SoundManager : MonoBehaviour {
         } else if (instance != this) {
             Destroy(gameObject);
         }
-
-        // set SoundManager to DontDestroyOnLoad so that it persists across scene change
-        DontDestroyOnLoad(gameObject);
+        
+        DontDestroyOnLoad(gameObject); // set SoundManager so that it persists across scenes 
     }
 
     void Start() {
@@ -27,39 +28,50 @@ public class SoundManager : MonoBehaviour {
     }
 
     public void PlayBite() {
-        biteSource.Play();
+        biteSound.Play();
+    }
+
+    public void PlaySick() {
+        sickSound.Play();
+    }
+
+    public void PlayLevelUp() {
+        levelUpSound.Play();
     }
 
     public void PlaySpeed() {
-        speedSource.Play();
-    }
-
-    public void PlaySlow() {
-        slowSource.Play();
+        speedSound.Play();
     }
 
     public void PlayMagnet() {
-        magnetSource.Play();
+        StartCoroutine(PlayMagnetLoop(3));
     }
 
+    private IEnumerator PlayMagnetLoop(int loopCount) {
+    for (int i = 0; i < loopCount; i++) {
+        magnetSound.Play();  
+        yield return new WaitForSeconds(magnetSound.clip.length);
+    }
+}
+
     public void PlayGameOver() {
-        gameOverSource.Play();
+        gameOverSound.Play();
     }
 
     public void PlayBackgroundMusic() {
-        if (backgroundMusicSource != null && !backgroundMusicSource.isPlaying) {
-            backgroundMusicSource.loop = true; // loop music
-            backgroundMusicSource.Play();
+        if (backgroundMusic != null && !backgroundMusic.isPlaying) {
+            backgroundMusic.loop = true; // loop music
+            backgroundMusic.Play();
         }
     }
 
     public void StopBackgroundMusic() {
-        if (backgroundMusicSource != null && backgroundMusicSource.isPlaying) {
-            backgroundMusicSource.Stop();
+        if (backgroundMusic != null && backgroundMusic.isPlaying) {
+            backgroundMusic.Stop();
         }
     }
 
     public void SetBackgroundMusicPitch(float pitch) {
-        backgroundMusicSource.pitch = pitch;
+        backgroundMusic.pitch = pitch;
     }
 }

@@ -4,7 +4,6 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-
 public class BoundaryDestroyer : MonoBehaviour {
     public TextMeshProUGUI missedText;
     private int missedCount = 0;
@@ -19,6 +18,8 @@ public class BoundaryDestroyer : MonoBehaviour {
 
     public TextMeshProUGUI finalScoreText;
     private ScoreManager scoreManager;
+
+    public Color[] angerColours; 
 
     public TextMeshProUGUI[] rankTexts;
     public AudioClip successSound;
@@ -47,9 +48,9 @@ public class BoundaryDestroyer : MonoBehaviour {
             
             Destroy(collision.gameObject);
             missedCount++;
-            UpdateMissedText();
+            //UpdateMissedText();
             IncrementAngerMeter(0.1f); // increase by 10%
-            FindObjectOfType<ScoreManager>().ResetCombo(); // reset the combo meter
+            //FindObjectOfType<ScoreManager>().ResetCombo(); // reset the combo meter
         }
     }
 
@@ -76,28 +77,21 @@ public class BoundaryDestroyer : MonoBehaviour {
         }
     }
 
-    public void DecrementAngerMeter(float decrement) {
-        angerMeterValue -= decrement;
-        angerMeterValue = Mathf.Clamp(angerMeterValue, 0, 1);
-        angerMeterFill.fillAmount = angerMeterValue;
+    // public void DecrementAngerMeter(float decrement) {
+    //     angerMeterValue -= decrement;
+    //     angerMeterValue = Mathf.Clamp(angerMeterValue, 0, 1);
+    //     angerMeterFill.fillAmount = angerMeterValue;
 
-        // change colour based on the fill amount
-        angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
+    //     // change colour based on the fill amount
+    //     angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
 
-        UpdateAngerText();
-        UpdatePlayerColours();
-    }
+    //     UpdateAngerText();
+    //     UpdatePlayerColours();
+    // }
 
     private void UpdatePlayerColours() {
         int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerMeterValue * 10), 0, 9);
-        Color playerBodyStartColour = new Color(0f / 255f, 204f / 255f, 0f / 255f);
-        Color playerBodyEndColour = new Color(255f / 255f, 0f / 255f, 0f / 255f);
-        playerBodySpriteRenderer.color = Color.Lerp(playerBodyStartColour, playerBodyEndColour, angerMeterValue);
-
-        // Color playerStartColour = new Color(0f / 255f, 255f / 255f, 255f / 255f);
-        // Color playerEndColour = new Color(255f / 255f, 255f / 255f, 255f / 255f);
-        // playerSpriteRenderer.color = Color.Lerp(playerStartColour, playerEndColour, angerMeterValue);
-
+        playerBodySpriteRenderer.color = angerColours[angerIndex];
         playerSpriteRenderer.sprite = FindObjectOfType<PlayerController>().mouthClosedSprites[angerIndex];
     }  
 
@@ -110,9 +104,9 @@ public class BoundaryDestroyer : MonoBehaviour {
         }
     }
 
-    private void UpdateMissedText() {
-        missedText.text = "Missed: " + missedCount;
-    }
+    // private void UpdateMissedText() {
+    //     missedText.text = "Missed: " + missedCount;
+    // }
 
     private void GameOver() {
         RemoveAllFoodItems();

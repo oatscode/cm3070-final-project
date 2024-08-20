@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections;
 using TMPro;
-using Unity.VisualScripting;
 
 public class ScoreManager : MonoBehaviour {
     public TextMeshProUGUI scoreText;
@@ -26,14 +25,14 @@ public class ScoreManager : MonoBehaviour {
 
     private void Start() {
         UpdateScore();
-        ResetCombo();
+        //ResetCombo();
         UpdateLevelText();
         UpdateMultiplierText();
         levelFlashText.SetActive(false);
     }
 
     private void UpdateLevelText() {
-        levelText.text = "Level: " + level;
+        levelText.text = "LEVEL " + level;
     }
 
     public int GetCurrentScore() {
@@ -42,18 +41,15 @@ public class ScoreManager : MonoBehaviour {
 
     private void UpdateMultiplierText() {
         if (multText != null) {
-            multText.text = pointMultiplier.ToString("F1") + "x";
+            multText.text = pointMultiplier.ToString("F1") + "X";
         }
     }
 
     private IEnumerator PlayLevelUpAnimation() {
-        // Enable the LevelFlashText object
         levelFlashText.SetActive(true);
 
-        // Wait for the duration of the animation (assuming 1 second for the example)
-        yield return new WaitForSeconds(1.3f); // Adjust this to match your animation length
+        yield return new WaitForSeconds(1.3f);
 
-        // Disable the LevelFlashText object after the animation is complete
         levelFlashText.SetActive(false);
     }
 
@@ -110,6 +106,7 @@ public class ScoreManager : MonoBehaviour {
 
         // calculate the BGM pitch based on the level
         float newPitch = 1f + (level - 1) * 0.05f;
+        SoundManager.instance.PlayLevelUp();
         SoundManager.instance.SetBackgroundMusicPitch(newPitch);
 
         // increase food speed and points
@@ -122,15 +119,15 @@ public class ScoreManager : MonoBehaviour {
         StartCoroutine(PlayLevelUpAnimation());
     }
 
-    public void ResetCombo() {
-        comboText.text = "Combo: ";
-    }
+    // public void ResetCombo() {
+    //     comboText.text = "Combo: ";
+    // }
 
-    private void UpdateCombo() {
-        comboText.text = "Combo: " + new string('O', consecutiveEaten);
-    }
+    // private void UpdateCombo() {
+    //     comboText.text = "Combo: " + new string('O', consecutiveEaten);
+    // }
 
     private void UpdateScore() {
-        scoreText.text = "Score: " + score;
+        scoreText.text = "SCORE " + score;
     }
 }

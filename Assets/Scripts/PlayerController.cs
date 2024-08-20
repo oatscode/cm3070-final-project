@@ -100,22 +100,20 @@ public class PlayerController : MonoBehaviour {
     }
 
     private IEnumerator RottenEffect() {
-        float originalSpeed = moveSpeed;
-        moveSpeed *= 0.2f;  // Slow down to 20% of the original speed
-
         float elapsed = 0f;
         Vector3 originalPosition = transform.position;
 
+        SoundManager.instance.PlaySick();
+
         while (elapsed < 1f) {
-            float jitterAmount = Mathf.Sin(elapsed * 40) * 0.1f;  // Adjust jitter intensity as needed
+            float jitterAmount = Mathf.Sin(elapsed * 40) * 0.1f;
             transform.position = new Vector3(originalPosition.x, originalPosition.y + jitterAmount, originalPosition.z);
 
             elapsed += Time.deltaTime;
             yield return null;
         }
 
-        transform.position = originalPosition;  // Reset position after jitter effect ends
-        moveSpeed = originalSpeed;  // Reset the speed back to normal
+        transform.position = originalPosition; 
     }
 
     private IEnumerator OpenMouth() {
@@ -291,7 +289,7 @@ public class PlayerController : MonoBehaviour {
 
         yield return new WaitForSeconds(magnetDuration);
 
-        SoundManager.instance.magnetSource.Stop();
+        SoundManager.instance.magnetSound.Stop();
         isMagnetEffectActive = false;
 
         // reset movement pattern to original
