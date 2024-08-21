@@ -11,32 +11,32 @@ public class ScoreManager : MonoBehaviour {
     public TextMeshProUGUI scoreFlashText;
     public GameObject levelFlashText;
     public GameObject uiCanvas;
+
     private int score = 0;
-    private int consecutiveEaten = 0;
     private float minBodyHeightScale = 0.66f;
     private float maxBodyHeightScale = 6.8f;
-    public int level = 1; 
+    public int level = 1;
+
     public BoundaryDestroyer boundaryDestroyer;
     public GameObject playerBody;
     public PlayerController playerController;
     public FoodSpawner foodSpawner;
-    
+
     private float pointMultiplier = 1f;
 
     private void Start() {
         UpdateScore();
-        //ResetCombo();
         UpdateLevelText();
         UpdateMultiplierText();
         levelFlashText.SetActive(false);
     }
 
-    private void UpdateLevelText() {
-        levelText.text = "LEVEL " + level;
+    private void UpdateScore() {
+        scoreText.text = "SCORE " + score;
     }
 
-    public int GetCurrentScore() {
-        return score;
+    private void UpdateLevelText() {
+        levelText.text = "LEVEL " + level;
     }
 
     private void UpdateMultiplierText() {
@@ -45,20 +45,27 @@ public class ScoreManager : MonoBehaviour {
         }
     }
 
-    private IEnumerator PlayLevelUpAnimation() {
-        levelFlashText.SetActive(true);
+    public int GetCurrentScore() {
+        return score;
+    }
 
-        yield return new WaitForSeconds(1.3f);
+    public void AddScore(int basePoints) {
+        int points = Mathf.RoundToInt(basePoints * pointMultiplier);
+        score += points;
+        UpdateScore();
+        StartCoroutine(ShowScoreFlash(points));
+        UpdatePlayerBodySize();
 
-        levelFlashText.SetActive(false);
+        if (playerBody.transform.localScale.y >= maxBodyHeightScale) {
+            LevelUp();
+        }
     }
 
     private IEnumerator ShowScoreFlash(int points) {
         if (scoreFlashText != null) {
-            int scoreFlashXpos = -5;
             RectTransform scoreFlashRect = scoreFlashText.GetComponent<RectTransform>();
             Vector3 playerPos = playerBody.transform.position;
-            scoreFlashRect.position = new Vector3(scoreFlashXpos, playerPos.y, transform.position.z);
+            scoreFlashRect.position = new Vector3(-5, playerPos.y, transform.position.z);
 
             scoreFlashText.text = "+" + points.ToString();
             yield return new WaitForSeconds(0.3f);
@@ -66,68 +73,39 @@ public class ScoreManager : MonoBehaviour {
         }
     }
 
-    public void AddScore(int basePoints) {
-        //float levelMultiplier = 1f + (level - 1) * 0.1f;
-        int points = Mathf.RoundToInt(basePoints * pointMultiplier);
-        score += points;
-        consecutiveEaten++;
-        UpdateScore();
-        //UpdateCombo();
-
-        StartCoroutine(ShowScoreFlash(points));
-
-        // Increase PlayerBody Y scale
+    private void UpdatePlayerBodySize() {
         Vector3 newScale = playerBody.transform.localScale;
         newScale.y += 0.2f;
         playerBody.transform.localScale = newScale;
-
-        // check for win condition
-        if (playerBody.transform.localScale.y >= maxBodyHeightScale) {
-            NextLevel();
-        }
-
-        // if (consecutiveEaten >= 3) {
-        //     consecutiveEaten = 0;
-        //     ResetCombo();
-        //     boundaryDestroyer.DecrementAngerMeter(0.1f); // Decrease anger meter by 10%
-        // }
     }
 
-    private void NextLevel() {
+    private void LevelUp() {
         level++;
-
-        // reset body size to default
-        Vector3 newScale = playerBody.transform.localScale;
-        newScale.y = minBodyHeightScale;
-        playerBody.transform.localScale = newScale;
-
-        // reset anger level
+        ResetPlayerBodySize();
         boundaryDestroyer.ResetAngerMeter();
-
-        // calculate the BGM pitch based on the level
-        float newPitch = 1f + (level - 1) * 0.05f;
-        SoundManager.instance.PlayLevelUp();
-        SoundManager.instance.SetBackgroundMusicPitch(newPitch);
-
-        // increase food speed and points
-        foodSpawner.IncreaseFoodSpeed(1.3f);
-        pointMultiplier += 0.5f;
-        UpdateMultiplierText();
-
+        AdjustGameDifficulty();
         UpdateLevelText();
-
         StartCoroutine(PlayLevelUpAnimation());
     }
 
-    // public void ResetCombo() {
-    //     comboText.text = "Combo: ";
-    // }
+    private void ResetPlayerBodySize() {
+        Vector3 newScale = playerBody.transform.localScale;
+        newScale.y = minBodyHeightScale;
+        playerBody.transform.localScale = newScale;
+    }
 
-    // private void UpdateCombo() {
-    //     comboText.text = "Combo: " + new string('O', consecutiveEaten);
-    // }
+    private void AdjustGameDifficulty() {
+        float newPitch = 1f + (level - 1) * 0.05f;
+        SoundManager.instance.PlayLevelUp();
+        SoundManager.instance.SetBackgroundMusicPitch(newPitch);
+        foodSpawner.IncreaseFoodSpeed(1.3f);
+        pointMultiplier += 0.5f;
+        UpdateMultiplierText();
+    }
 
-    private void UpdateScore() {
-        scoreText.text = "SCORE " + score;
+    private IEnumerator PlayLevelUpAnimation() {
+        levelFlashText.SetActive(true);
+        yield return new WaitForSeconds(1.3f);
+        levelFlashText.SetActive(false);
     }
 }

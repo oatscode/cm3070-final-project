@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 
 public class SoundManager : MonoBehaviour {
-    public static SoundManager instance = null;
+    public static SoundManager instance;
 
     public AudioSource biteSound;
     public AudioSource sickSound;
@@ -11,11 +11,13 @@ public class SoundManager : MonoBehaviour {
     public AudioSource levelUpSound;
     public AudioSource gameOverSound;
     public AudioSource backgroundMusic;
+    private int magnetLoopCount = 4;
 
     void Awake() {
         // ensure only one instance of SoundManager
         if (instance == null) {
             instance = this;
+            DontDestroyOnLoad(gameObject);
         } else if (instance != this) {
             Destroy(gameObject);
         }
@@ -44,7 +46,7 @@ public class SoundManager : MonoBehaviour {
     }
 
     public void PlayMagnet() {
-        StartCoroutine(PlayMagnetLoop(3));
+        StartCoroutine(PlayMagnetLoop(magnetLoopCount));
     }
 
     private IEnumerator PlayMagnetLoop(int loopCount) {

@@ -5,12 +5,14 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class BoundaryDestroyer : MonoBehaviour {
-    public TextMeshProUGUI missedText;
-    private int missedCount = 0;
+    public TextMeshProUGUI missText;
+    public GameObject player;
+    // private int missedCount = 0;
     public Image angerMeterFill;
     public float angerMeterValue = 0f; 
     public TextMeshProUGUI angerText;
-    private string[] angerLevels = { "Happy", "Pleased", "Content", "Neutral", "Irritated", "Annoyed", "Frustrated", "Angry", "Enraged", "Furious" };
+    private string[] angerLevels = { "Happy", "Pleased", "Content", "Neutral", 
+        "Irritated", "Annoyed", "Frustrated", "Angry", "Enraged", "Furious" };
     public GameObject gameOverPanel;
 
     public SpriteRenderer playerSpriteRenderer;
@@ -47,7 +49,7 @@ public class BoundaryDestroyer : MonoBehaviour {
             }
             
             Destroy(collision.gameObject);
-            missedCount++;
+            // missedCount++;
             //UpdateMissedText();
             IncrementAngerMeter(0.1f); // increase by 10%
             //FindObjectOfType<ScoreManager>().ResetCombo(); // reset the combo meter
@@ -107,6 +109,7 @@ public class BoundaryDestroyer : MonoBehaviour {
     // private void UpdateMissedText() {
     //     missedText.text = "Missed: " + missedCount;
     // }
+
 
     private void GameOver() {
         RemoveAllFoodItems();

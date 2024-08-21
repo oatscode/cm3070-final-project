@@ -26,12 +26,9 @@ public class FoodSpawner : MonoBehaviour {
     
     private float foodSpeedMultiplier = 1.0f;
 
-        public void IncreaseFoodSpeed(float multiplier) {
+    public void IncreaseFoodSpeed(float multiplier) {
         foodSpeedMultiplier *= multiplier;
-
-        // Increase speed of existing food instances
-        FoodMover[] existingFoodMovers = FindObjectsOfType<FoodMover>();
-        foreach (FoodMover foodMover in existingFoodMovers) {
+        foreach (FoodMover foodMover in FindObjectsOfType<FoodMover>()) {
             foodMover.IncreaseSpeed(multiplier);
         }
     }
@@ -41,29 +38,27 @@ public class FoodSpawner : MonoBehaviour {
         playerController = FindObjectOfType<PlayerController>();
 
         foreach (var food in foods) {
-            var coroutine = SpawnFood(food);
-            spawnCoroutines.Add(coroutine);
-            StartCoroutine(coroutine);
+            StartCoroutine(SpawnFood(food));
         }
     }
 
     private IEnumerator SpawnFood(FoodProperties foodProperties) {
         while (true) {
             yield return new WaitForSeconds(foodProperties.spawnInterval);
-            Vector2 spawnPosition = GetRandomSpawnPosition();
-            Quaternion spawnRotation = foodProperties.prefab.transform.rotation; // use the prefab's default rotation
+            SpawnSingleFood(foodProperties);
+        }
+    }
 
-            GameObject foodInstance = Instantiate(foodProperties.prefab, spawnPosition, spawnRotation);
-            FoodMover foodMover = foodInstance.AddComponent<FoodMover>();
-            Food food = foodInstance.GetComponent<Food>();
-            food.powerUpType = foodProperties.powerUpType; // set the power-up type
-
-            foodMover.SetProperties(foodProperties.speed * foodSpeedMultiplier, foodProperties.movementPattern, foodRangeCollider.bounds.min.y, foodRangeCollider.bounds.max.y);
-
-            // Check if magnet effect is active
-            if (playerController.IsMagnetEffectActive()) {
-                foodMover.SetMagnetTarget(playerController.transform);
-            }
+    private void SpawnSingleFood(FoodProperties foodProperties) {
+        Vector2 spawnPosition = GetRandomSpawnPosition();
+        GameObject foodInstance = Instantiate(foodProperties.prefab, spawnPosition, Quaternion.identity);
+        FoodMover foodMover = foodInstance.AddComponent<FoodMover>();
+        Food food = foodInstance.GetComponent<Food>();
+        food.powerUpType = foodProperties.powerUpType;
+        foodMover.SetProperties(foodProperties.speed * foodSpeedMultiplier, foodProperties.movementPattern, foodRangeCollider.bounds.min.y, foodRangeCollider.bounds.max.y);
+        
+        if (playerController.IsMagnetEffectActive()) {
+            foodMover.SetMagnetTarget(playerController.transform);
         }
     }
 
