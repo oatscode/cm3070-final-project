@@ -24,7 +24,7 @@ public class FoodMover : MonoBehaviour {
         this.maxY = maxY;
 
         // check if Ice Cream effect is active
-        if (FindObjectOfType<PlayerController>().IsIceCreamEffectActive()) {
+        if (FindObjectOfType<PlayerController>().IsSlowEffectActive()) {
             this.speed /= 2; // apply slow effect
         }
         
@@ -55,7 +55,7 @@ public class FoodMover : MonoBehaviour {
         if (!initialized) return;
 
         // check if Ice Cream effect is active
-        if (FindObjectOfType<PlayerController>().IsIceCreamEffectActive()) {
+        if (FindObjectOfType<PlayerController>().IsSlowEffectActive()) {
             speed = originalSpeed / 2; // apply slow effect
         } else {
             speed = originalSpeed;

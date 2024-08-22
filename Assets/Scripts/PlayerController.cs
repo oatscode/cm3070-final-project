@@ -10,20 +10,11 @@ public class PlayerController : MonoBehaviour {
     public float moveSpeed = 5;
     private float originalMoveSpeed;
     public float speedBoostMultiplier = 2f;
-    public float speedBoostDuration = 10f; 
-    public float magnetDuration = 10f; 
+    public float powerDuration = 5f; 
 
     // mouth open/close variables
     private bool isMouthOpen = false;
     public float openMouthDuration = 0.25f;
-    private Coroutine openMouthCoroutine;
-    public Sprite closedMouthSprite;
-    public Sprite openMouthSprite;
-    
-    private Coroutine speedPowerCoroutine;
-    private Coroutine slowPowerCoroutine;
-    private Coroutine magnetPowerCoroutine;
-    private Coroutine rottenPowerCoroutine;
     
     private bool isSlowPowerActive = false;
     private bool isMagnetPowerActive = false;
@@ -58,8 +49,7 @@ public class PlayerController : MonoBehaviour {
         boundaryDestroyer = FindObjectOfType<BoundaryDestroyer>();
         scoreManager = FindObjectOfType<ScoreManager>();
         playerHeadSpriteRenderer = GetComponent<SpriteRenderer>();
-        playerHeadSpriteRenderer.sprite = closedMouthSprite;
-
+ 
         boundaryTopYPos = boundaryTop.transform.position.y;
         boundaryBottomYPos = boundaryBottom.transform.position.y;
 
@@ -82,53 +72,21 @@ public class PlayerController : MonoBehaviour {
 
     private void HandleInput() {
         if (Input.GetKeyDown(KeyCode.Space)) {
-            if (openMouthCoroutine != null) StopCoroutine(openMouthCoroutine);
-            openMouthCoroutine = StartCoroutine(OpenMouth());
-        }
-
-                if (Input.GetKeyDown(KeyCode.Space)) {
-            if (openMouthCoroutine != null) {
-                StopCoroutine(openMouthCoroutine);
-            }
-            openMouthCoroutine = StartCoroutine(OpenMouth());
+            StartCoroutine(OpenMouth());
         }
 
         // check for activation of stored power-ups
-        if (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) {
-            ActivateSpeedPower();
+        if ((Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift)) && isSpeedPowerReady) {
+            StartCoroutine(SpeedEffect());
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl)) {
-            ActivateSlowPower();
+        if ((Input.GetKeyDown(KeyCode.LeftControl) || Input.GetKeyDown(KeyCode.RightControl)) && isSlowPowerReady) {
+            StartCoroutine(SlowEffect());
         }
 
-        if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt)) {
-            ActivateMagnetPower();
+        if ((Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt)) && isMagnetPowerReady) {
+            StartCoroutine(MagnetEffect());
         }
-    }
-
-    public void ActivateRottenPower() {
-        if (rottenPowerCoroutine != null) {
-            StopCoroutine(rottenPowerCoroutine);
-        }
-        rottenPowerCoroutine = StartCoroutine(RottenEffect());
-    }
-
-    private IEnumerator RottenEffect() {
-        float elapsed = 0f;
-        Vector3 originalPosition = transform.position;
-
-        SoundManager.instance.PlaySick();
-
-        while (elapsed < 1f) {
-            float jitterAmount = Mathf.Sin(elapsed * 40) * 0.1f;
-            transform.position = new Vector3(originalPosition.x, originalPosition.y + jitterAmount, originalPosition.z);
-
-            elapsed += Time.deltaTime;
-            yield return null;
-        }
-
-        transform.position = originalPosition; 
     }
 
     private IEnumerator OpenMouth() {
@@ -136,7 +94,6 @@ public class PlayerController : MonoBehaviour {
         int angerIndex = Mathf.Clamp(Mathf.FloorToInt(boundaryDestroyer.angerMeterValue * 10), 0, 9);
         playerHeadSpriteRenderer.sprite = mouthOpenSprites[angerIndex];
         yield return new WaitForSeconds(openMouthDuration);
-        // playerHeadSpriteRenderer.sprite = closedMouthSprite;
         
         playerHeadSpriteRenderer.sprite = mouthClosedSprites[angerIndex];
         isMouthOpen = false;
@@ -169,32 +126,6 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    private void ActivateSpeedPower() {
-        if (isSpeedPowerReady) {
-            ActivateSpeedBoost();
-            isSpeedPowerReady = false;
-            UpdatePowerUpUI(0, null);
-            SoundManager.instance.PlaySpeed();
-        }
-    }
-
-    private void ActivateSlowPower() {
-        if (isSlowPowerReady) {
-            ActivateIceCreamEffect();
-            isSlowPowerReady = false;
-            UpdatePowerUpUI(1, null);
-        }
-    }
-
-    private void ActivateMagnetPower() {
-        if (isMagnetPowerReady) {
-            ActivateMagnetEffect();
-            isMagnetPowerReady = false;
-            UpdatePowerUpUI(2, null);
-            SoundManager.instance.PlayMagnet();
-        }
-    }
-
     private void OnTriggerStay2D(Collider2D collision) {
         // "eat" a food if it's colliding with the player and player mouth is open
         if (collision.CompareTag("Food") && isMouthOpen) {
@@ -203,38 +134,29 @@ public class PlayerController : MonoBehaviour {
           }
     }
 
-    public void ActivateSpeedBoost() {
-        if (speedPowerCoroutine != null) {
-            StopCoroutine(speedPowerCoroutine);
-        }
-        speedPowerCoroutine = StartCoroutine(SpeedBoost());
+    public void ResetPlayerBodySize() {
+        playerBody.transform.localScale = new Vector3(1f, 0.66f, playerBody.transform.localScale.z);
+        playerBody.transform.localPosition = new Vector3(0, playerBody.transform.localPosition.y, playerBody.transform.localPosition.z);
     }
 
-    private IEnumerator SpeedBoost() {
+    private IEnumerator SpeedEffect() {
+        isSpeedPowerReady = false;
+        UpdatePowerUpUI(0, null);
+        SoundManager.instance.PlaySpeed();
         moveSpeed *= speedBoostMultiplier;
-
-        if (powerText != null) {
-            powerText.text = "<color=red>SPEED</color>";
-        }
-
-        yield return new WaitForSeconds(speedBoostDuration);
-
+        powerText.text = "<color=red>SPEED</color>";
+        yield return new WaitForSeconds(powerDuration);
         moveSpeed = originalMoveSpeed;
-
-        // reset PowerText
-        if (powerText != null) {
-            powerText.text = "";
-        }
+        powerText.text = "";
     }
 
-    public void ActivateIceCreamEffect() {
-        if (slowPowerCoroutine != null) {
-            StopCoroutine(slowPowerCoroutine);
-        }
-        slowPowerCoroutine = StartCoroutine(IceCreamEffect());
+    public bool IsSlowEffectActive() {
+        return isSlowPowerActive;
     }
 
-    private IEnumerator IceCreamEffect() {
+    private IEnumerator SlowEffect() {
+        isSlowPowerReady = false;
+        UpdatePowerUpUI(1, null);
         isSlowPowerActive = true;
 
         // get all current FoodMover instances
@@ -246,17 +168,12 @@ public class PlayerController : MonoBehaviour {
         }
 
         // update power text box to show "SLOW" in blue
-        if (powerText != null) {
-            powerText.text = "<color=blue>SLOW</color>";
-        }
-
+        powerText.text = "<color=blue>SLOW</color>";
+        
         // slow down background music
         SoundManager.instance.SetBackgroundMusicPitch(0.5f);
 
-        // double the spawn intervals for all foods
-        // foodSpawner.AdjustSpawnIntervals(2f);
-
-        yield return new WaitForSeconds(10f); 
+        yield return new WaitForSeconds(powerDuration); 
 
         // reset speed to original for all current food instances
         foreach (var foodMover in foodMovers) {
@@ -265,9 +182,6 @@ public class PlayerController : MonoBehaviour {
 
         isSlowPowerActive = false;
 
-        // reset spawn intervals to original
-        // foodSpawner.AdjustSpawnIntervals(0.5f);
-
         // calculate the BGM pitch based on the level
         float currentLevelPitch = 1f + (scoreManager.level - 1) * 0.05f;
         SoundManager.instance.SetBackgroundMusicPitch(currentLevelPitch);
@@ -275,22 +189,14 @@ public class PlayerController : MonoBehaviour {
         powerText.text = "";
     }
 
-    public bool IsIceCreamEffectActive() {
-        return isSlowPowerActive;
-    }
-
     public bool IsMagnetEffectActive() {
         return isMagnetPowerActive;
     }
 
-    public void ActivateMagnetEffect() {
-        if (magnetPowerCoroutine != null) {
-            StopCoroutine(magnetPowerCoroutine);
-        }
-        magnetPowerCoroutine = StartCoroutine(MagnetEffect());
-    }
-
     private IEnumerator MagnetEffect() {
+        isMagnetPowerReady = false;
+        UpdatePowerUpUI(2, null);
+        SoundManager.instance.PlayMagnet();
         isMagnetPowerActive = true;
 
         // get all current FoodMover instances
@@ -301,12 +207,10 @@ public class PlayerController : MonoBehaviour {
             foodMover.SetMagnetTarget(transform);
             magnetAffectedFoodMovers.Add(foodMover);
         }
-
-        if (powerText != null) {
-            powerText.text = "<color=yellow>MAGNET</color>";
-        }
-
-        yield return new WaitForSeconds(magnetDuration);
+        
+        powerText.text = "<color=yellow>MAGNET</color>";
+        
+        yield return new WaitForSeconds(powerDuration);
 
         SoundManager.instance.magnetSound.Stop();
         isMagnetPowerActive = false;
@@ -318,14 +222,28 @@ public class PlayerController : MonoBehaviour {
 
         magnetAffectedFoodMovers.Clear();
 
-        // reset PowerText
-        if (powerText != null) {
-            powerText.text = "";
-        }
+        powerText.text = ""; // reset PowerText
+        
     }
 
-    public void ResetPlayerBodySize() {
-        playerBody.transform.localScale = new Vector3(1f, 0.66f, playerBody.transform.localScale.z);
-        playerBody.transform.localPosition = new Vector3(0, playerBody.transform.localPosition.y, playerBody.transform.localPosition.z);
+    public void ActivateRottenPower() {
+        StartCoroutine(RottenEffect());
+    }
+
+    private IEnumerator RottenEffect() {
+        float elapsed = 0f;
+        Vector3 originalPosition = transform.position;
+
+        SoundManager.instance.PlaySick();
+
+        while (elapsed < 1f) {
+            float jitterAmount = Mathf.Sin(elapsed * 40) * 0.1f;
+            transform.position = new Vector3(originalPosition.x, originalPosition.y + jitterAmount, originalPosition.z);
+
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+
+        transform.position = originalPosition; 
     }
 }
