@@ -23,8 +23,10 @@ public class FoodSpawner : MonoBehaviour {
     private BoxCollider2D foodRangeCollider;
     private List<IEnumerator> spawnCoroutines = new List<IEnumerator>();
     private PlayerController playerController;
-    
     private float foodSpeedMultiplier = 1.0f;
+    private float foodSpawnXPos;
+    private float foodSpawnMinYPos;
+    private float foodSpawnMaxYPos;
 
     public void IncreaseFoodSpeed(float multiplier) {
         foodSpeedMultiplier *= multiplier;
@@ -34,8 +36,11 @@ public class FoodSpawner : MonoBehaviour {
     }
 
     private void Start() {
-        foodRangeCollider = foodRange.GetComponent<BoxCollider2D>();
         playerController = FindObjectOfType<PlayerController>();
+        foodRangeCollider = foodRange.GetComponent<BoxCollider2D>();
+        foodSpawnXPos = foodRangeCollider.bounds.center.x;
+        foodSpawnMinYPos = foodRangeCollider.bounds.min.y;
+        foodSpawnMaxYPos = foodRangeCollider.bounds.max.y;
 
         foreach (var food in foods) {
             StartCoroutine(SpawnFood(food));
@@ -55,7 +60,8 @@ public class FoodSpawner : MonoBehaviour {
         FoodMover foodMover = foodInstance.AddComponent<FoodMover>();
         Food food = foodInstance.GetComponent<Food>();
         food.powerUpType = foodProperties.powerUpType;
-        foodMover.SetProperties(foodProperties.speed * foodSpeedMultiplier, foodProperties.movementPattern, foodRangeCollider.bounds.min.y, foodRangeCollider.bounds.max.y);
+        foodMover.SetProperties(foodProperties.speed * foodSpeedMultiplier, 
+            foodProperties.movementPattern, foodSpawnMinYPos, foodSpawnMaxYPos);
         
         if (playerController.IsMagnetEffectActive()) {
             foodMover.SetMagnetTarget(playerController.transform);
@@ -63,11 +69,8 @@ public class FoodSpawner : MonoBehaviour {
     }
 
     private Vector2 GetRandomSpawnPosition() {
-        float x = foodRangeCollider.bounds.center.x;
-        float minY = foodRangeCollider.bounds.min.y;
-        float maxY = foodRangeCollider.bounds.max.y;
-        float y = Random.Range(minY, maxY);
-        return new Vector2(x, y);
+        float foodSpawnYPos = Random.Range(foodSpawnMinYPos, foodSpawnMaxYPos);
+        return new Vector2(foodSpawnXPos, foodSpawnYPos);
     }
 
     public void AdjustSpawnIntervals(float multiplier) {

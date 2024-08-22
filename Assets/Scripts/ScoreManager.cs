@@ -4,18 +4,23 @@ using TMPro;
 
 public class ScoreManager : MonoBehaviour {
     public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI comboText;
     public TextMeshProUGUI levelText;
-    public TextMeshProUGUI debugText;
     public TextMeshProUGUI multText;
     public TextMeshProUGUI scoreFlashText;
     public GameObject levelFlashText;
     public GameObject uiCanvas;
 
     private int score = 0;
-    private float minBodyHeightScale = 0.66f;
-    private float maxBodyHeightScale = 6.8f;
+    private const float minBodyHeightScale = 0.66f;
+    private const float maxBodyHeightScale = 6.8f;
     public int level = 1;
+    private const float foodSpeedMultiplier = 1.3f;
+    private const float audioPitchMultiplier = 0.05f;
+    private const float pointsFlashDuration = 0.3f;
+    private const float pointsFlashXPos = -5f;
+    private const float playerSizeIncrement = 0.2f;
+    private const float levelUpAnimationDuration = 1.3f;
+    private const float maxAudioPitch = 1f;
 
     public BoundaryDestroyer boundaryDestroyer;
     public GameObject playerBody;
@@ -23,6 +28,7 @@ public class ScoreManager : MonoBehaviour {
     public FoodSpawner foodSpawner;
 
     private float pointMultiplier = 1f;
+    private const float pointMultiplierIncrement = 0.5f;
 
     private void Start() {
         UpdateScore();
@@ -40,9 +46,7 @@ public class ScoreManager : MonoBehaviour {
     }
 
     private void UpdateMultiplierText() {
-        if (multText != null) {
-            multText.text = pointMultiplier.ToString("F1") + "X";
-        }
+        multText.text = pointMultiplier.ToString("F1") + "X";
     }
 
     public int GetCurrentScore() {
@@ -65,17 +69,17 @@ public class ScoreManager : MonoBehaviour {
         if (scoreFlashText != null) {
             RectTransform scoreFlashRect = scoreFlashText.GetComponent<RectTransform>();
             Vector3 playerPos = playerBody.transform.position;
-            scoreFlashRect.position = new Vector3(-5, playerPos.y, transform.position.z);
+            scoreFlashRect.position = new Vector3(pointsFlashXPos, playerPos.y, transform.position.z);
 
             scoreFlashText.text = "+" + points.ToString();
-            yield return new WaitForSeconds(0.3f);
+            yield return new WaitForSeconds(pointsFlashDuration);
             scoreFlashText.text = null;
         }
     }
 
     private void UpdatePlayerBodySize() {
         Vector3 newScale = playerBody.transform.localScale;
-        newScale.y += 0.2f;
+        newScale.y += playerSizeIncrement;
         playerBody.transform.localScale = newScale;
     }
 
@@ -95,17 +99,17 @@ public class ScoreManager : MonoBehaviour {
     }
 
     private void AdjustGameDifficulty() {
-        float newPitch = 1f + (level - 1) * 0.05f;
+        float newPitch = maxAudioPitch + (level - 1) * audioPitchMultiplier;
         SoundManager.instance.PlayLevelUp();
         SoundManager.instance.SetBackgroundMusicPitch(newPitch);
-        foodSpawner.IncreaseFoodSpeed(1.3f);
-        pointMultiplier += 0.5f;
+        foodSpawner.IncreaseFoodSpeed(foodSpeedMultiplier);
+        pointMultiplier += pointMultiplierIncrement;
         UpdateMultiplierText();
     }
 
     private IEnumerator PlayLevelUpAnimation() {
         levelFlashText.SetActive(true);
-        yield return new WaitForSeconds(1.3f);
+        yield return new WaitForSeconds(levelUpAnimationDuration);
         levelFlashText.SetActive(false);
     }
 }

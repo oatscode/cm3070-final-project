@@ -15,6 +15,7 @@ public class PlayerController : MonoBehaviour {
     // mouth open/close variables
     private bool isMouthOpen = false;
     public float openMouthDuration = 0.25f;
+
     
     private bool isSlowPowerActive = false;
     private bool isMagnetPowerActive = false;

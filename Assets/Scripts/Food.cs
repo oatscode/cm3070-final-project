@@ -8,19 +8,10 @@ public class Food : MonoBehaviour {
     public void OnEaten(ScoreManager scoreManager, PlayerController player) {
         scoreManager.AddScore(basePoints);
         if (player != null) {
-            switch (powerUpType) {
-                case PowerUpType.Speed:
-                    player.StorePowerUp(powerUpType);
-                    break;
-                case PowerUpType.Slow:
-                    player.StorePowerUp(powerUpType);
-                    break;
-                case PowerUpType.Magnet:
-                    player.StorePowerUp(powerUpType);
-                    break;
-                case PowerUpType.Rotten:
-                    player.ActivateRottenPower();
-                    break;
+            if (powerUpType == PowerUpType.Rotten) {
+                player.ActivateRottenPower();
+            } else if (powerUpType != PowerUpType.None) {
+                player.StorePowerUp(powerUpType);
             }
         }
         SoundManager.instance.PlayBite(); // play bite sound

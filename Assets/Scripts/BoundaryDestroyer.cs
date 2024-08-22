@@ -5,31 +5,40 @@ using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class BoundaryDestroyer : MonoBehaviour {
-    public TextMeshProUGUI missText;
     public GameObject player;
-    // private int missedCount = 0;
+    public GameObject gameOverPanel;
     public Image angerMeterFill;
     public float angerMeterValue = 0f; 
-    public TextMeshProUGUI angerText;
-    private string[] angerLevels = { "Happy", "Pleased", "Content", "Neutral", 
-        "Irritated", "Annoyed", "Frustrated", "Angry", "Enraged", "Furious" };
-    public GameObject gameOverPanel;
-
-    public SpriteRenderer playerSpriteRenderer;
+    private const float angerIncrement = 0.1f;
+    private const float rankRevealInterval = 1f;
+    private const float unpauseTimeValue = 1f;
+    private const float pauseTimeValue = 0f;
+    private const float pitchIncrement = 0.03f;
+    private const float maxAngerValue = 1f;
+    private const float maxAudioPitch = 1f;
+    private const int minAngerIndex = 0;
+    private const int maxAngerIndex = 9;
+    private const int angerMultiplier = 10;
+    private const int lowestRank = 1;
+    private const int highestRank = 10;
+    public SpriteRenderer playerHeadSpriteRenderer;
     public SpriteRenderer playerBodySpriteRenderer;
-
+    public TextMeshProUGUI missText;
+    public TextMeshProUGUI angerText;
     public TextMeshProUGUI finalScoreText;
     private ScoreManager scoreManager;
-
     public Color[] angerColours; 
-
     public TextMeshProUGUI[] rankTexts;
     public AudioClip successSound;
     private AudioSource audioSource;
-    public int rankThreshold = 10000; // points needed for each rank
+    private PlayerController playerController;
+    public const int rankThreshold = 10000; // points needed for each rank
+    private string[] angerLevels = { "Happy", "Pleased", "Content", "Neutral", 
+        "Irritated", "Annoyed", "Frustrated", "Angry", "Enraged", "Furious" };
 
     private void Start() {
         scoreManager = FindObjectOfType<ScoreManager>();
+        playerController = FindObjectOfType<PlayerController>();
     }
 
     private void Awake() {
@@ -49,10 +58,8 @@ public class BoundaryDestroyer : MonoBehaviour {
             }
             
             Destroy(collision.gameObject);
-            // missedCount++;
-            //UpdateMissedText();
-            IncrementAngerMeter(0.1f); // increase by 10%
-            //FindObjectOfType<ScoreManager>().ResetCombo(); // reset the combo meter
+
+            IncrementAngerMeter(angerIncrement); // increase by 10%
         }
     }
 
@@ -60,7 +67,7 @@ public class BoundaryDestroyer : MonoBehaviour {
         angerMeterValue = 0f;
         angerMeterFill.fillAmount = angerMeterValue;
         angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
-        UpdateAngerText();
+        //UpdateAngerText();
     }
 
     private void IncrementAngerMeter(float increment) {
@@ -70,54 +77,37 @@ public class BoundaryDestroyer : MonoBehaviour {
         // change colour based on the fill amount
         angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
 
-        UpdateAngerText();
+        //UpdateAngerText();
         UpdatePlayerColours();
 
         // game over if anger hits 100%
-        if (angerMeterValue >= 1f) {
+        if (angerMeterValue >= maxAngerValue) {
             GameOver();
         }
     }
 
-    // public void DecrementAngerMeter(float decrement) {
-    //     angerMeterValue -= decrement;
-    //     angerMeterValue = Mathf.Clamp(angerMeterValue, 0, 1);
-    //     angerMeterFill.fillAmount = angerMeterValue;
-
-    //     // change colour based on the fill amount
-    //     angerMeterFill.color = Color.Lerp(Color.blue, Color.red, angerMeterValue);
-
-    //     UpdateAngerText();
-    //     UpdatePlayerColours();
-    // }
-
     private void UpdatePlayerColours() {
-        int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerMeterValue * 10), 0, 9);
+        int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerMeterValue * angerMultiplier), minAngerIndex, maxAngerIndex);
         playerBodySpriteRenderer.color = angerColours[angerIndex];
-        playerSpriteRenderer.sprite = FindObjectOfType<PlayerController>().mouthClosedSprites[angerIndex];
+        playerHeadSpriteRenderer.sprite = playerController.mouthClosedSprites[angerIndex];
     }  
 
-    private void UpdateAngerText() {
-        if (angerMeterValue >= 1f) {
-            angerText.text = "";
-        } else {
-            int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerMeterValue * 10), 0, 9);
-            angerText.text = angerLevels[angerIndex];
-        }
-    }
-
-    // private void UpdateMissedText() {
-    //     missedText.text = "Missed: " + missedCount;
+    // private void UpdateAngerText() {
+    //     if (angerMeterValue >= maxAngerValue) {
+    //         angerText.text = "";
+    //     } else {
+    //         int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerMeterValue * 10), 0, 9);
+    //         angerText.text = angerLevels[angerIndex];
+    //     }
     // }
-
 
     private void GameOver() {
         RemoveAllFoodItems();
-        RemoveAngerMeter();
+        //RemoveAngerMeter();
         gameOverPanel.SetActive(true);       
         SoundManager.instance.StopBackgroundMusic(); // stop background music
         SoundManager.instance.PlayGameOver(); // play game over sound
-        Time.timeScale = 0f; // pause the game
+        Time.timeScale = pauseTimeValue; // pause the game
 
         // display score
         int currentScore = scoreManager.GetCurrentScore();
@@ -126,19 +116,16 @@ public class BoundaryDestroyer : MonoBehaviour {
     }
 
     private IEnumerator RevealRanks(int finalScore) {
-        int achievedRank = Mathf.Clamp(10 - (finalScore / rankThreshold), 1, 10);
-        // Debug.Log("achievedRank " + achievedRank);
-        // Debug.Log("rankTexts.Length - 1 " + (rankTexts.Length - 1));
-        // Debug.Log("rankThreshold " + achievedRank);
+        int achievedRank = Mathf.Clamp(highestRank - (finalScore / rankThreshold), lowestRank, highestRank);
         for (int i = rankTexts.Length - 1; i >= achievedRank - 1; i--) {
             rankTexts[i].gameObject.SetActive(true);
             
             // increase pitch of rank up sound
-            float pitch = 1f + (0.03f * (rankTexts.Length - 1 - i));
+            float pitch = maxAudioPitch + (pitchIncrement * (rankTexts.Length - 1 - i));
             audioSource.pitch = pitch;
             audioSource.PlayOneShot(successSound);
 
-            yield return new WaitForSecondsRealtime(1f);
+            yield return new WaitForSecondsRealtime(rankRevealInterval);
         }
     }
 
@@ -146,8 +133,8 @@ public class BoundaryDestroyer : MonoBehaviour {
         foreach (var rankText in rankTexts) {
             rankText.gameObject.SetActive(false);
         }
-        Time.timeScale = 1f; // unpause the game
-        SoundManager.instance.SetBackgroundMusicPitch(1f);
+        Time.timeScale = unpauseTimeValue; // unpause the game
+        SoundManager.instance.SetBackgroundMusicPitch(maxAudioPitch);
         SoundManager.instance.PlayBackgroundMusic();
         
        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
@@ -164,10 +151,10 @@ public class BoundaryDestroyer : MonoBehaviour {
         }
     }
 
-    private void RemoveAngerMeter() {
-    GameObject[] angerItems = GameObject.FindGameObjectsWithTag("AngerMeter");
-        foreach (GameObject angerItem in angerItems) {
-            angerItem.SetActive(false);
-        }
-    }
+    // private void RemoveAngerMeter() {
+    // GameObject[] angerItems = GameObject.FindGameObjectsWithTag("AngerMeter");
+    //     foreach (GameObject angerItem in angerItems) {
+    //         angerItem.SetActive(false);
+    //     }
+    // }
 }
