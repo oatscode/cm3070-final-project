@@ -1,11 +1,14 @@
 using UnityEngine;
+using System;
 
 public class Food : MonoBehaviour {
     public int basePoints = 100;
     public enum PowerUpType { None, Speed, Slow, Magnet, Rotten }
     public PowerUpType powerUpType = PowerUpType.None;
 
-    public void OnEaten(ScoreManager scoreManager, PlayerController player) {
+    public event Action OnEaten;
+
+    public void OnEatenTrigger(ScoreManager scoreManager, PlayerController player) {
         scoreManager.AddScore(basePoints);
         if (player != null) {
             if (powerUpType == PowerUpType.Rotten) {
@@ -15,6 +18,6 @@ public class Food : MonoBehaviour {
             }
         }
         SoundManager.instance.PlayBite(); // play bite sound
-        Destroy(gameObject); // destroy the food instance
+        OnEaten?.Invoke();
     }
 }

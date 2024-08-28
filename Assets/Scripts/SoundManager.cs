@@ -21,8 +21,6 @@ public class SoundManager : MonoBehaviour {
         } else if (instance != this) {
             Destroy(gameObject);
         }
-        
-        DontDestroyOnLoad(gameObject); // set SoundManager so that it persists across scenes 
     }
 
     void Start() {
@@ -30,34 +28,40 @@ public class SoundManager : MonoBehaviour {
     }
 
     public void PlayBite() {
-        biteSound.Play();
+        PlaySound(biteSound);
     }
 
     public void PlaySick() {
-        sickSound.Play();
+        PlaySound(sickSound);
     }
 
     public void PlayLevelUp() {
-        levelUpSound.Play();
+        PlaySound(levelUpSound);
     }
 
     public void PlaySpeed() {
-        speedSound.Play();
+        PlaySound(speedSound);
     }
 
     public void PlayMagnet() {
         StartCoroutine(PlayMagnetLoop(magnetLoopCount));
     }
 
-    private IEnumerator PlayMagnetLoop(int loopCount) {
-    for (int i = 0; i < loopCount; i++) {
-        magnetSound.Play();  
-        yield return new WaitForSeconds(magnetSound.clip.length);
-    }
-}
-
     public void PlayGameOver() {
-        gameOverSound.Play();
+        PlaySound(gameOverSound);
+    }
+
+    private IEnumerator PlayMagnetLoop(int loopCount) {
+        for (int i = 0; i < loopCount; i++) {
+            magnetSound.Play();  
+            yield return new WaitForSeconds(magnetSound.clip.length);
+        }
+    }
+
+    private void PlaySound(AudioSource audioSource) {
+        if (audioSource != null && !audioSource.isPlaying) {
+            audioSource.Play();
+        }
     }
 
     public void PlayBackgroundMusic() {
@@ -74,6 +78,8 @@ public class SoundManager : MonoBehaviour {
     }
 
     public void SetBackgroundMusicPitch(float pitch) {
-        backgroundMusic.pitch = pitch;
+        if (backgroundMusic != null) {
+            backgroundMusic.pitch = pitch;
+        }
     }
 }

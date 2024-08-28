@@ -11,14 +11,14 @@ public class ScoreManager : MonoBehaviour {
     public GameObject uiCanvas;
 
     private int score = 0;
-    private const float minBodyHeightScale = 0.66f;
-    private const float maxBodyHeightScale = 6.8f;
     public int level = 1;
+    private const float minBodyHeightScale = 1f;
+    private const float maxBodyHeightScale = 10f;
     private const float foodSpeedMultiplier = 1.3f;
     private const float audioPitchMultiplier = 0.05f;
     private const float pointsFlashDuration = 0.3f;
-    private const float pointsFlashXPos = -5f;
-    private const float playerSizeIncrement = 0.2f;
+    private const float pointsFlashXPos = -4.75f;
+    private const float playerSizeIncrement = 0.5f;
     private const float levelUpAnimationDuration = 1.3f;
     private const float maxAudioPitch = 1f;
 
@@ -38,15 +38,15 @@ public class ScoreManager : MonoBehaviour {
     }
 
     private void UpdateScore() {
-        scoreText.text = "SCORE " + score;
+        scoreText.text = score.ToString();
     }
 
     private void UpdateLevelText() {
-        levelText.text = "LEVEL " + level;
+        levelText.text = level.ToString();
     }
 
     private void UpdateMultiplierText() {
-        multText.text = pointMultiplier.ToString("F1") + "X";
+        multText.text = pointMultiplier.ToString("F1");
     }
 
     public int GetCurrentScore() {
