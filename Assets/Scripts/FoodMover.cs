@@ -66,7 +66,7 @@ public class FoodMover : MonoBehaviour {
         } else {
             switch (movementPattern) {
                 case FoodSpawner.MovementPattern.Straight:
-                    transform.Translate(direction * speed * Time.deltaTime);
+                    transform.Translate(direction * speed * Time.deltaTime, Space.World);
                     break;
                 case FoodSpawner.MovementPattern.Bounce:
                     BounceMovement();
@@ -119,7 +119,7 @@ public class FoodMover : MonoBehaviour {
 
     private void MoveTowardsMagnetTarget() {
         Vector2 directionToTarget = (magnetTarget.position - transform.position).normalized;
-        transform.Translate(directionToTarget * speed * Time.deltaTime);
+        transform.Translate(directionToTarget * speed * Time.deltaTime, Space.World);
     }
 
     public void SetMagnetTarget(Transform target) {
