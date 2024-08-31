@@ -8,6 +8,7 @@ public class TitleScreenManager : MonoBehaviour {
     public TextMeshProUGUI pressSpaceText;  
     public float blinkSpeed = 0.5f;  
     private bool gameStarted = false;
+    private const KeyCode startGameKey = KeyCode.Space;
 
     private void Start() {
         titleScreenCanvas.SetActive(true);
@@ -15,7 +16,7 @@ public class TitleScreenManager : MonoBehaviour {
     }
 
     private void Update() {
-        if (!gameStarted && Input.GetKeyDown(KeyCode.Space)) {
+        if (!gameStarted && Input.GetKeyDown(startGameKey)) {
             StartGame();
         }
     }

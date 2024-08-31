@@ -3,86 +3,99 @@ using System.Collections;
 using TMPro;
 
 public class ScoreManager : MonoBehaviour {
-    public TextMeshProUGUI scoreText;
-    public TextMeshProUGUI levelText;
-    public TextMeshProUGUI multText;
-    public TextMeshProUGUI scoreFlashText;
-    public GameObject levelFlashText;
-    public GameObject uiCanvas;
+    // public variables adjustable in Unity
+    public TextMeshProUGUI scoreText; // UI text to display the current score
+    public TextMeshProUGUI levelText; // UI text to display the current level
+    public TextMeshProUGUI multText; // UI text to display the current score multiplier
+    public TextMeshProUGUI pointsFlashText; // UI text to flash points gained by eating a food
+    public GameObject levelFlashText; // UI text to flash when player levels up
+    public GameObject uiCanvas; // canvas containing the core UI elements
 
-    private int score = 0;
-    public int level = 1;
-    private const float minBodyHeightScale = 1f;
-    private const float maxBodyHeightScale = 10f;
-    private const float foodSpeedMultiplier = 1.3f;
-    private const float audioPitchMultiplier = 0.05f;
-    private const float pointsFlashDuration = 0.3f;
-    private const float pointsFlashXPos = -4.75f;
-    private const float playerSizeIncrement = 0.5f;
-    private const float levelUpAnimationDuration = 1.3f;
-    private const float maxAudioPitch = 1f;
+    public BoundaryDestroyer boundaryDestroyer; // to access score data
+    public GameObject playerBody; 
+    public PlayerController playerController; // to access player data
+    public FoodSpawner foodSpawner; // to access food spawner data
 
-    public BoundaryDestroyer boundaryDestroyer;
-    public GameObject playerBody;
-    public PlayerController playerController;
-    public FoodSpawner foodSpawner;
+    // variables for internal logic
+    private int score = 0; // current score
+    public int level = 1; // current level
+    private float pointMultiplier = 1f; // current multiplier for points scored
 
-    private float pointMultiplier = 1f;
-    private const float pointMultiplierIncrement = 0.5f;
+    // constants for game mechanics
+    private const float minBodyHeightScale = 1f; // minimum player body size
+    private const float maxBodyHeightScale = 10f; // maximum player body size before leveling up
+    private const float foodSpeedMultiplier = 1.3f; // multiplier to increase food speed at level up
+    private const float audioPitchMultiplier = 0.05f; // multiplier to increase background music pitch at level up
+    private const float pointsFlashDuration = 0.3f; // duration for points flash text is visible
+    private const float pointsFlashXPos = -4.75f; // X position for the points flash text
+    private const float playerSizeIncrement = 0.5f; // player body height increment amount per score addition
+    private const float levelUpAnimationDuration = 1.3f; // duration of the level up flash animation
+    private const float maxAudioPitch = 1f; // maximum pitch for background music
+    private const float pointMultiplierIncrement = 0.5f; // increment in the points per food multiplier at level up
 
     private void Start() {
+        // initialize UI elements
         UpdateScore();
         UpdateLevelText();
         UpdateMultiplierText();
-        levelFlashText.SetActive(false);
+        levelFlashText.SetActive(false); // ensure level up flash text is hidden at the start
     }
 
+    // updates the score UI text with the current score
     private void UpdateScore() {
         scoreText.text = score.ToString();
     }
 
+    // updates the level UI text with the current level
     private void UpdateLevelText() {
         levelText.text = level.ToString();
     }
 
+    // updates the multiplier UI text with the current points multiplier
     private void UpdateMultiplierText() {
         multText.text = pointMultiplier.ToString("F1");
     }
 
+    // returns the current score
     public int GetCurrentScore() {
         return score;
     }
 
+    // adds points to the score, updates the player body size, and checks for level up
     public void AddScore(int basePoints) {
         int points = Mathf.RoundToInt(basePoints * pointMultiplier);
         score += points;
         UpdateScore();
-        StartCoroutine(ShowScoreFlash(points));
-        UpdatePlayerBodySize();
+        StartCoroutine(ShowPointsFlash(points)); // flash the points added to the score
+        UpdatePlayerBodySize(); // increase the player body size
 
+        // level up if the player body has reached the max size
         if (playerBody.transform.localScale.y >= maxBodyHeightScale) {
             LevelUp();
         }
     }
 
-    private IEnumerator ShowScoreFlash(int points) {
-        if (scoreFlashText != null) {
-            RectTransform scoreFlashRect = scoreFlashText.GetComponent<RectTransform>();
+    // display the points added to the score near the player
+    private IEnumerator ShowPointsFlash(int points) {
+        if (pointsFlashText != null) {
+            RectTransform scoreFlashRect = pointsFlashText.GetComponent<RectTransform>();
             Vector3 playerPos = playerBody.transform.position;
             scoreFlashRect.position = new Vector3(pointsFlashXPos, playerPos.y, transform.position.z);
 
-            scoreFlashText.text = "+" + points.ToString();
+            pointsFlashText.text = "+" + points.ToString(); // display the points gained
             yield return new WaitForSeconds(pointsFlashDuration);
-            scoreFlashText.text = null;
+            pointsFlashText.text = null; // clear the flash text
         }
     }
 
+    // increases the player body size as they eat food
     private void UpdatePlayerBodySize() {
         Vector3 newScale = playerBody.transform.localScale;
-        newScale.y += playerSizeIncrement;
+        newScale.y += playerSizeIncrement; // increment the height of the player body
         playerBody.transform.localScale = newScale;
     }
 
+    // level up logic: reset player size, adjusting game difficulty, play animation
     private void LevelUp() {
         level++;
         ResetPlayerBodySize();
@@ -92,21 +105,24 @@ public class ScoreManager : MonoBehaviour {
         StartCoroutine(PlayLevelUpAnimation());
     }
 
+    // resets player body size to the initial minimum scale
     private void ResetPlayerBodySize() {
         Vector3 newScale = playerBody.transform.localScale;
         newScale.y = minBodyHeightScale;
         playerBody.transform.localScale = newScale;
     }
 
+    // adjusts the game difficulty: increase food speed, background music pitch, and point multiplier
     private void AdjustGameDifficulty() {
-        float newPitch = maxAudioPitch + (level - 1) * audioPitchMultiplier;
+        float newPitch = maxAudioPitch + (level - 1) * audioPitchMultiplier; // calculate new music pitch
         SoundManager.instance.PlayLevelUp();
-        SoundManager.instance.SetBackgroundMusicPitch(newPitch);
-        foodSpawner.IncreaseFoodSpeed(foodSpeedMultiplier);
-        pointMultiplier += pointMultiplierIncrement;
+        SoundManager.instance.SetBackgroundMusicPitch(newPitch); // set new music pitch
+        foodSpawner.IncreaseFoodSpeed(foodSpeedMultiplier); // increase food speeds
+        pointMultiplier += pointMultiplierIncrement; // increase points multiplier
         UpdateMultiplierText();
     }
 
+    // display a flash animation on level up
     private IEnumerator PlayLevelUpAnimation() {
         levelFlashText.SetActive(true);
         yield return new WaitForSeconds(levelUpAnimationDuration);
