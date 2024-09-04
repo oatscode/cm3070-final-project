@@ -26,7 +26,7 @@ public class FoodSpawner : MonoBehaviour {
 
     private BoxCollider2D foodRangeCollider; // collider to define food spawn range
     private List<IEnumerator> spawnCoroutines = new List<IEnumerator>();
-    private PlayerController playerController; // to access player data
+    private GameController gameController; // to access player data
     private float foodSpeedMultiplier = 1.0f; // multiplier to adjust the speed of the food
     private float foodSpawnXPos; // x position where food spawns
     private float foodSpawnMinYPos; // minimum Y position for food spawn
@@ -37,7 +37,7 @@ public class FoodSpawner : MonoBehaviour {
 
     private void Start() {
         // initialise references and variables
-        playerController = FindObjectOfType<PlayerController>();
+        gameController = FindObjectOfType<GameController>();
         foodRangeCollider = foodRange.GetComponent<BoxCollider2D>();
         foodSpawnXPos = foodRangeCollider.bounds.center.x;
         foodSpawnMinYPos = foodRangeCollider.bounds.min.y;
@@ -116,8 +116,8 @@ public class FoodSpawner : MonoBehaviour {
             foodProperties.movementPattern, foodSpawnMinYPos, foodSpawnMaxYPos);
         
         // if the magnet power-up is active, make the food move towards the player
-        if (playerController.IsMagnetEffectActive()) {
-            foodMover.SetMagnetTarget(playerController.transform);
+        if (gameController.IsMagnetEffectActive()) {
+            foodMover.SetMagnetTarget(gameController.transform);
         }
     }
 

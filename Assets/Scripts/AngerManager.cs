@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-public class BoundaryDestroyer : MonoBehaviour {
+public class AngerManager : MonoBehaviour {
     // public variables adjustable in Unity
     public GameObject player;
     public GameObject gameOverPanel; // UI panel to display when the game is over
@@ -18,6 +18,7 @@ public class BoundaryDestroyer : MonoBehaviour {
     public TextMeshProUGUI[] rankTexts; // UI list of text boxes for showing the 10 rank levels
     public AudioClip successSound; // rank reveal sound effect
     public const int rankThreshold = 10000; // points needed for each rank
+    //
 
     // variables for internal logic
     public float angerMeterValue = 0f; // current anger level
@@ -35,17 +36,17 @@ public class BoundaryDestroyer : MonoBehaviour {
     private const int angerMultiplier = 10; // multiplier for converting anger meter value to anger index
     private const int lowestRank = 1;
     private const int highestRank = 10;
-    private ScoreManager scoreManager; // to access boundary data
+    private UIManager uiManager; // to access boundary data
     private AudioSource audioSource;
-    private PlayerController playerController; // to access player data
+    private GameController gameManager; // to access player data
     // list of anger level descriptions corresponding to the anger meter value
     private string[] angerLevels = { "Happy", "Pleased", "Content", "Neutral", 
         "Irritated", "Annoyed", "Frustrated", "Angry!", "Enraged!!", "Furious!!!" };
 
     private void Start() {
         // initialise references
-        scoreManager = FindObjectOfType<ScoreManager>();
-        playerController = FindObjectOfType<PlayerController>();
+        uiManager = FindObjectOfType<UIManager>();
+        gameManager = FindObjectOfType<GameController>();
     }
 
     private void Awake() {
@@ -132,7 +133,7 @@ public class BoundaryDestroyer : MonoBehaviour {
     private void UpdatePlayerColours() {
         int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerMeterValue * angerMultiplier), minAngerIndex, maxAngerIndex);
         playerBodySpriteRenderer.color = angerColours[angerIndex];
-        playerHeadSpriteRenderer.sprite = playerController.mouthClosedSprites[angerIndex];
+        playerHeadSpriteRenderer.sprite = gameManager.mouthClosedSprites[angerIndex];
     }  
 
     // updates the anger text on the anger meter, based on the current anger level
@@ -156,7 +157,7 @@ public class BoundaryDestroyer : MonoBehaviour {
         Time.timeScale = pauseTimeValue; // pause the game
 
         // display score
-        int currentScore = scoreManager.GetCurrentScore();
+        int currentScore = uiManager.GetCurrentScore();
         finalScoreText.text = currentScore.ToString();
         StartCoroutine(RevealRanks(currentScore));
     }

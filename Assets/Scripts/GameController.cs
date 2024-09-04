@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 
-public class PlayerController : MonoBehaviour {
+public class GameController : MonoBehaviour {
     // public variables adjustable in Unity
     public GameObject playerBody; 
     public GameObject movementGuide; // UI for player movement controls
@@ -17,8 +17,8 @@ public class PlayerController : MonoBehaviour {
     public float openMouthDuration = 0.25f; // duration (in seconds) of player mouth open when eat button is pressed
     public TextMeshProUGUI powerText; // UI label to display active power-up
     public Image[] powerUpSlots; // array of slots for displaying power-ups
-    private BoundaryDestroyer boundaryDestroyer; // to access boundary data
-    private ScoreManager scoreManager; // to access score data
+    private AngerManager angerManager; // to access boundary data
+    private UIManager uiManager; // to access score data
     
     // sprites for power-ups
     public Sprite speedPowerSprite;
@@ -79,8 +79,8 @@ public class PlayerController : MonoBehaviour {
 
     private void Start() {
         // initialise references and variables
-        boundaryDestroyer = FindObjectOfType<BoundaryDestroyer>();
-        scoreManager = FindObjectOfType<ScoreManager>();
+        angerManager = FindObjectOfType<AngerManager>();
+        uiManager = FindObjectOfType<UIManager>();
         playerHeadSpriteRenderer = GetComponent<SpriteRenderer>();
          
         // get the Y positions of the top and bottom boundaries
@@ -156,7 +156,7 @@ public class PlayerController : MonoBehaviour {
     private IEnumerator OpenMouth() {
         isMouthOpen = true;
         // change the player sprite depending on the current anger level
-        int angerIndex = Mathf.Clamp(Mathf.FloorToInt(boundaryDestroyer.angerMeterValue * angerMultiplier), minAngerIndex, maxAngerIndex);
+        int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerManager.angerMeterValue * angerMultiplier), minAngerIndex, maxAngerIndex);
         playerHeadSpriteRenderer.sprite = mouthOpenSprites[angerIndex];
         yield return new WaitForSeconds(openMouthDuration);
         
@@ -203,7 +203,7 @@ public class PlayerController : MonoBehaviour {
     private void OnTriggerStay2D(Collider2D collision) {
         if (collision.CompareTag("Food") && isMouthOpen) {
             Food food = collision.GetComponent<Food>();
-            food.OnEatenTrigger(scoreManager, this);
+            food.OnEatenTrigger(uiManager, this);
         }
     }
 
@@ -254,7 +254,7 @@ public class PlayerController : MonoBehaviour {
 
         // reset background music pitch based on the player's current level
         // music pitch increases from level 2 onward
-        float currentLevelPitch = musicPitchDefault + (scoreManager.level - musicPitchStartLevel) * musicPitchIncrement;
+        float currentLevelPitch = musicPitchDefault + (uiManager.level - musicPitchStartLevel) * musicPitchIncrement;
         SoundManager.instance.SetBackgroundMusicPitch(currentLevelPitch);
 
         powerText.text = null;

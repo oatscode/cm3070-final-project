@@ -2,7 +2,7 @@ using UnityEngine;
 using System.Collections;
 using TMPro;
 
-public class ScoreManager : MonoBehaviour {
+public class UIManager : MonoBehaviour {
     // public variables adjustable in Unity
     public TextMeshProUGUI scoreText; // UI text to display the current score
     public TextMeshProUGUI levelText; // UI text to display the current level
@@ -11,9 +11,9 @@ public class ScoreManager : MonoBehaviour {
     public GameObject levelFlashText; // UI text to flash when player levels up
     public GameObject uiCanvas; // canvas containing the core UI elements
 
-    public BoundaryDestroyer boundaryDestroyer; // to access score data
+    public AngerManager angerManager; // to access score data
     public GameObject playerBody; 
-    public PlayerController playerController; // to access player data
+    public GameController gameController; // to access player data
     public FoodSpawner foodSpawner; // to access food spawner data
 
     // variables for internal logic
@@ -99,7 +99,7 @@ public class ScoreManager : MonoBehaviour {
     private void LevelUp() {
         level++;
         ResetPlayerBodySize();
-        boundaryDestroyer.ResetAngerMeter();
+        angerManager.ResetAngerMeter();
         AdjustGameDifficulty();
         UpdateLevelText();
         StartCoroutine(PlayLevelUpAnimation());

@@ -26,7 +26,7 @@ public class FoodMover : MonoBehaviour {
         this.maxY = maxY;
 
         // halve the food speed if the slow effect is active
-        if (FindObjectOfType<PlayerController>().IsSlowEffectActive()) {
+        if (FindObjectOfType<GameController>().IsSlowEffectActive()) {
             this.speed /= 2;
         }
         
@@ -59,7 +59,7 @@ public class FoodMover : MonoBehaviour {
         if (!initialised) return;
 
         // check if the slow effect is active and adjust speed if so
-        if (FindObjectOfType<PlayerController>().IsSlowEffectActive()) {
+        if (FindObjectOfType<GameController>().IsSlowEffectActive()) {
             speed = originalSpeed / 2;
         } else {
             speed = originalSpeed; // reset to original speed if slow effect is not active
