@@ -18,8 +18,8 @@ public class AngerManager : MonoBehaviour {
     public TextMeshProUGUI[] rankTexts; // UI list of text boxes for showing the 10 rank levels
     public AudioClip successSound; // rank reveal sound effect
     public const int rankThreshold = 10000; // points needed for each rank
-    //
-
+    public FoodSpawner foodSpawner;
+ 
     // variables for internal logic
     public float angerMeterValue = 0f; // current anger level
     private const float defaultAngerMeterValue = 0f;
@@ -47,15 +47,11 @@ public class AngerManager : MonoBehaviour {
         // initialise references
         uiManager = FindObjectOfType<UIManager>();
         gameManager = FindObjectOfType<GameController>();
+        foodSpawner = FindObjectOfType<FoodSpawner>();
     }
 
     private void Awake() {
         audioSource = gameObject.AddComponent<AudioSource>();
-    }
-
-    private void Update() {
-        // missText.transform.position = new Vector3(missText.transform.position.x, player.transform.position.y + 1.5f, missText.transform.position.z);
-        // angerText.transform.position = new Vector3(angerText.transform.position.x, player.transform.position.y - 1.5f, angerText.transform.position.z);
     }
 
     // triggered when a food item enters the boundary collider (i.e. when food is missed)
@@ -66,12 +62,12 @@ public class AngerManager : MonoBehaviour {
 
             // if the missed food is rotten, destroy it without increasing the anger meter
             if (food.powerUpType == Food.PowerUpType.Rotten) {
-                Destroy(collision.gameObject);
+                foodSpawner.ReturnToPool(collision.gameObject);
                 return;
             }
             
-            // destroy the missed food and show the miss notification
-            Destroy(collision.gameObject);
+            // remove the missed food and show the miss notification
+            foodSpawner.ReturnToPool(collision.gameObject);
             StartCoroutine(ShowMissText());
             IncrementAngerMeter(angerIncrement); // increase anger by 10%
         }
@@ -146,8 +142,7 @@ public class AngerManager : MonoBehaviour {
         }
     }
 
-    //    Game Over: stop the game, show game over panel, reveal ranks
-
+    // Game Over: stop the game, show game over panel, reveal ranks
     private void GameOver() {
         RemoveAllFoodItems(); // remove any remaining food items from the scene
         RemoveAngerMeter(); // hide the anger meter

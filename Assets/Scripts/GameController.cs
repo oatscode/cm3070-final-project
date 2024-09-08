@@ -64,7 +64,7 @@ public class GameController : MonoBehaviour {
     private const KeyCode eatKey = KeyCode.Space;
 
     // constants for rotten (jitter) effect
-    private const float rottenEffectDuration = 1f;
+    private const float rottenEffectDuration = 1.5f;
     private const float rottenEffectFrequency = 40f;
     private const float rottenEffectAmplitude = 0.1f;
 
@@ -159,7 +159,6 @@ public class GameController : MonoBehaviour {
         int angerIndex = Mathf.Clamp(Mathf.FloorToInt(angerManager.angerMeterValue * angerMultiplier), minAngerIndex, maxAngerIndex);
         playerHeadSpriteRenderer.sprite = mouthOpenSprites[angerIndex];
         yield return new WaitForSeconds(openMouthDuration);
-        
         playerHeadSpriteRenderer.sprite = mouthClosedSprites[angerIndex];
         isMouthOpen = false;
     }
@@ -242,8 +241,7 @@ public class GameController : MonoBehaviour {
         
         // slow down background music
         SoundManager.instance.SetBackgroundMusicPitch(slowEffectMusicPitch);
-
-        yield return new WaitForSeconds(powerDuration); 
+        yield return new WaitForSeconds(powerDuration); // effect over
 
         // reset speed to original for all food movers
         foreach (var foodMover in foodMovers) {
@@ -254,7 +252,8 @@ public class GameController : MonoBehaviour {
 
         // reset background music pitch based on the player's current level
         // music pitch increases from level 2 onward
-        float currentLevelPitch = musicPitchDefault + (uiManager.level - musicPitchStartLevel) * musicPitchIncrement;
+        float currentLevelPitch = musicPitchDefault + 
+            (uiManager.level - musicPitchStartLevel) * musicPitchIncrement;
         SoundManager.instance.SetBackgroundMusicPitch(currentLevelPitch);
 
         powerText.text = null;
@@ -280,10 +279,8 @@ public class GameController : MonoBehaviour {
             magnetAffectedFoodMovers.Add(foodMover);
         }
         
-        powerText.text = "<color=yellow>MAGNET</color>";
-        
-        yield return new WaitForSeconds(powerDuration);
-
+        powerText.text = "<color=yellow>MAGNET</color>";        
+        yield return new WaitForSeconds(powerDuration); // effect over
         SoundManager.instance.magnetSound.Stop(); // stop the magnet sound effect
         isMagnetPowerActive = false;
 
@@ -293,9 +290,7 @@ public class GameController : MonoBehaviour {
         }
 
         magnetAffectedFoodMovers.Clear();
-
         powerText.text = null; // clear PowerText
-        
     }
 
     // activates the rotten (negative) power-up

@@ -43,7 +43,7 @@ public class FoodSpawner : MonoBehaviour {
         foodSpawnMinYPos = foodRangeCollider.bounds.min.y;
         foodSpawnMaxYPos = foodRangeCollider.bounds.max.y;
 
-        InitialisePool(); // initialise the object pool
+        InitialisePool(); // create the pool of food objects
 
         // start spawning food items based on their properties
         foreach (var food in foods) {
@@ -56,14 +56,16 @@ public class FoodSpawner : MonoBehaviour {
         foreach (var food in foods) {
             Queue<GameObject> objectPool = new Queue<GameObject>();
 
-            // instantiate a number of food objects up to the pool size and deactivate them
+            // instantiate a number of food objects up to 
+            // the pool size and deactivate them
             for (int i = 0; i < poolSize; i++) {
                 GameObject obj = Instantiate(food.prefab);
                 obj.SetActive(false);
                 objectPool.Enqueue(obj);
             }
-
-            foodPool.Add(food.prefab.name, objectPool); // add the pool to the dictionary
+            
+            // add the pool to the dictionary
+            foodPool.Add(food.prefab.name, objectPool); 
         }
     }
 
@@ -74,11 +76,11 @@ public class FoodSpawner : MonoBehaviour {
             obj.SetActive(true);
             return obj;
         }
-        return null; // return null if no object is available in the pool
+        return null; // return null if no object is available
     }
 
     // returns a food object to the pool after it has been used
-    private void ReturnToPool(GameObject obj) {
+    public void ReturnToPool(GameObject obj) {
         obj.SetActive(false);
         foodPool[obj.name].Enqueue(obj);
     }

@@ -82,7 +82,12 @@ public class UIManager : MonoBehaviour {
             Vector3 playerPos = playerBody.transform.position;
             scoreFlashRect.position = new Vector3(pointsFlashXPos, playerPos.y, transform.position.z);
 
-            pointsFlashText.text = "+" + points.ToString(); // display the points gained
+            // show "+" for positive points and "-" for negative points (rotten food)
+            if (points >= 0) {
+                pointsFlashText.text = "+" + points.ToString(); 
+            } else {
+                pointsFlashText.text = points.ToString(); // negative points already have "-" sign
+            }
             yield return new WaitForSeconds(pointsFlashDuration);
             pointsFlashText.text = null; // clear the flash text
         }
